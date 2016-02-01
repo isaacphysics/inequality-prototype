@@ -12,7 +12,8 @@ System.config({
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "removeComments": false,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "moduleResolution": "node",
   },
 
   // Configure default extensions so we can use old-style imports.

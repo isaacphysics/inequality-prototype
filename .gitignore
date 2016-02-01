@@ -7,3 +7,6 @@ tmp
 app.tar.gz
 *.localbackup
 app/npm-debug.log
+src/**/*.js
+src/**/*.js.map
+dist/
