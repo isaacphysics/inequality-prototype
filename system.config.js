@@ -31,7 +31,8 @@ System.config({
     jquery: 'node_modules/jquery/dist/jquery.min.js',
     bootstrap: 'node_modules/bootstrap/dist/js/bootstrap.min.js',
     reflect: 'node_modules/reflect-metadata/Reflect.js',
-    phaser: 'node_modules/phaser/dist/phaser.min.js'
+    phaser: 'node_modules/phaser/dist/phaser.min.js',
+    "sketch-js": 'node_modules/sketch-js/js/sketch.min.js',
   },
 
   // Define any dependencies of legacy libraries, and make sure some are imported globally.

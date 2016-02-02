@@ -5,7 +5,7 @@ var Builder = require('systemjs-builder');
 var src = '[./src/**/*.ts]';
 var dest = './dist/js/app.js';
 var opts = {
-  minify: true,
+  minify: false,
   sourceMaps: true
 };
 
