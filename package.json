@@ -5,11 +5,11 @@
     "systemjs": "0.19.6",
     "jquery": "2.2.0",
     "reflect-metadata": "0.1.2",
-    "phaser": "2.4.4",
-    "sketch-js": "1.1.1"
+    "sketch-js": "1.1.1",
+    "system-coffee": "0.1.2"
   },
   "devDependencies": {
-    "typescript": "1.7.5",
+    "coffee-script": "1.10.0",
     "systemjs-builder": "0.14.11"
   }
 }
