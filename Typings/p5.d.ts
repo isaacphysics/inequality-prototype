@@ -1,77 +1,74 @@
-declare var p5: any;
-//declare function p5(sketch: any): void;
+declare module p5 {
 
-///*
-// * Environment
-// */
-//declare var width: number;
-//declare var height: number;
+    export interface instance {
+        new (s: (context: context) => void);
+        Vector : Vector;
+    }
 
-///*
-// * Input
-// */
-///* Mouse */
-//declare var mouseX: number;
-//declare var mouseY: number;
-//declare var mouseIsPressed: boolean;
+    export interface context {
 
-///*
-// * Math
-// */
-///* Calculation */
-//declare function floor(n: number): number;
-///* Random */
-//declare function random(): number;
-//declare function random(max: number): number;
-//declare function random(min: number, max: number): number;
+        setup(): any;
+        draw(): any;
 
-///*
-// * Rendering
-// */
-//declare function createCanvas(width: number, height: number): void;
+        createCanvas(width: number, height: number): void;
+        noCursor(): void;
+        noStroke(): void;
 
-///*
-// * Shape
-// */
-///* 2D Primitives */
-//declare function ellipse(x: number, y: number, width: number, height: number): void;
-//declare function point(x: number, y: number): void;
-//declare function rect(x: number, y: number, width: number, height: number): void;
+        loadImage(image: string): Image;
+        createVector(x: number, y: number): Vector;
 
-///*
-// * Color
-// */
-///* Setting */
-//declare function background(v1: number, v2?: number, v3?: number, a?: number): void;
-//declare function background(v1: number[], v2?: number, v3?: number, a?: number): void;
-//declare function background(v1: number, v2?: number[], v3?: number, a?: number): void;
-//declare function background(v1: number, v2?: number, v3?: number[], a?: number): void;
-//declare function background(v1: number, v2?: number, v3?: number, a?: number[]): void;
-//declare function background(v1: number[], v2?: number[], v3?: number, a?: number): void;
-//declare function background(v1: number, v2?: number[], v3?: number[], a?: number): void;
-//declare function background(v1: number, v2?: number, v3?: number[], a?: number[]): void;
-//declare function background(v1: number[], v2?: number[], v3?: number[], a?: number): void;
-//declare function background(v1: number, v2?: number[], v3?: number[], a?: number[]): void;
-//declare function background(v1: number[], v2?: number[], v3?: number[], a?: number[]): void;
-//declare function fill(v1: number, v2?: number, v3?: number, a?: number): void;
-//declare function fill(v1: number[], v2?: number, v3?: number, a?: number): void;
-//declare function fill(v1: number, v2?: number[], v3?: number, a?: number): void;
-//declare function fill(v1: number, v2?: number, v3?: number[], a?: number): void;
-//declare function fill(v1: number, v2?: number, v3?: number, a?: number[]): void;
-//declare function fill(v1: number[], v2?: number[], v3?: number, a?: number): void;
-//declare function fill(v1: number, v2?: number[], v3?: number[], a?: number): void;
-//declare function fill(v1: number, v2?: number, v3?: number[], a?: number[]): void;
-//declare function fill(v1: number[], v2?: number[], v3?: number[], a?: number): void;
-//declare function fill(v1: number, v2?: number[], v3?: number[], a?: number[]): void;
-//declare function fill(v1: number[], v2?: number[], v3?: number[], a?: number[]): void;
-//declare function stroke(v1: number, v2?: number, v3?: number, a?: number): void;
-//declare function stroke(v1: number[], v2?: number, v3?: number, a?: number): void;
-//declare function stroke(v1: number, v2?: number[], v3?: number, a?: number): void;
-//declare function stroke(v1: number, v2?: number, v3?: number[], a?: number): void;
-//declare function stroke(v1: number, v2?: number, v3?: number, a?: number[]): void;
-//declare function stroke(v1: number[], v2?: number[], v3?: number, a?: number): void;
-//declare function stroke(v1: number, v2?: number[], v3?: number[], a?: number): void;
-//declare function stroke(v1: number, v2?: number, v3?: number[], a?: number[]): void;
-//declare function stroke(v1: number[], v2?: number[], v3?: number[], a?: number): void;
-//declare function stroke(v1: number, v2?: number[], v3?: number[], a?: number[]): void;
-//declare function stroke(v1: number[], v2?: number[], v3?: number[], a?: number[]): void;
+        random(min: number, max?: number): number;
+
+        background(grayValue: number): void;
+        background(color: string): void;
+        background(red: number, green: number, blue: number, opacity?: number): void;
+        background(hue: number, saturation: string[], brightness: string[], opacity: string[]): void;
+
+        //Calculation
+        floor(n: number): number;
+
+        //Random
+        random(min: number, max: number): number;
+
+        //Shape
+        //>2D Primitives
+        ellipse(x: number, y: number, width: number, height: number): void;
+        line(x1: number, y1: number, x2: number, y2: number);
+
+        //Color
+        red(obj: any): number;
+        //>Setting
+        fill(color: string[]);
+        fill(red: number, green: number, blue: number, opacity?: number);
+        fill(red: string[], green: string[], blue: string[], opacity?: number);
+        stroke(color: string[]);
+        stroke(red: number, green: number, blue: number, opacity?: number);
+        stroke(red: string[], green: string[], blue: string[], opacity?: number);
+
+
+        //Noise
+        noise(x: number, y: number, z: number);
+
+        //Time & Date
+        millis(): number;
+    }
+
+    export interface Image {
+        width: number;
+        height: number;
+        pixels: number[];
+        loadPixels(): number[];
+        get(): any;
+        get(x: number, y: number): any;
+    }
+
+    export interface Vector {
+        x: number;
+        y: number;
+        z: number;
+        lerp(x: any, y?: any, z?: any, amt?: any): void;
+        dist(v1: Vector, v2: Vector): number;
+    }
+}
+
+declare var p5: p5.instance;

@@ -9,29 +9,24 @@ module Inequality {
     class Symbol {
         private s: any;
 
-        private x: number;
-        private y: number;
+        position: p5.Vector;
+
+        black: boolean;
 
         constructor(s: any) {
             this.s = s;
 
-            this.x = this.s.width / 2;
-            this.y = this.s.height / 2;
+            this.position = s.createVector(0, 0);
         }
 
         display(): void {
             this.s.stroke(0);
-            this.s.point(this.x, this.y);
-        }
-
-        step(): void {
-            var stepx: number = this.s.random(-1, 1);
-            var stepy: number = this.s.random(-1, 1);
-            this.x += stepx;
-            this.y += stepy;
-
-            this.x = this.s.constrain(this.x, 0, this.s.width - 1);
-            this.y = this.s.constrain(this.y, 0, this.s.height - 1);
+            if(this.black) {
+                this.s.fill(0);
+            } else {
+                this.s.fill(255);
+            }
+            this.s.ellipse(this.position.x, this.position.y, 50, 50);
         }
     }
 
@@ -41,24 +36,38 @@ module Inequality {
 
         s.setup = () => {
             symbols = []
-            s.createCanvas(640, 360);
-            symbols.push(new Symbol(s));
-            symbols.push(new Symbol(s));
-            symbols.push(new Symbol(s));
-            symbols.push(new Symbol(s));
-            symbols.push(new Symbol(s));
-            symbols.push(new Symbol(s));
-            symbols.push(new Symbol(s));
-            symbols.push(new Symbol(s));
+            s.createCanvas(800, 600);
+            for(var i = 0; i < 12; ++i) {
+                var symbol = new Symbol(s);
+                symbol.position.x = 100 + 100*(i%4);
+                symbol.position.y = 100 + 100*(Math.floor(i/4));
+                symbols.push(symbol);
+            }
             s.background(255);
         };
 
         s.draw = () => {
+            s.clear();
             symbols.forEach(symbol => {
-                symbol.step();
                 symbol.display();
             });
         };
+
+        s.touchStarted = () => {
+            symbols.forEach(symbol => {
+                if(p5.Vector.dist(symbol.position, s.createVector(s.touchX, s.touchY)) < 25) {
+                    symbol.black = true;
+                } else {
+                    symbol.black = false;
+                }
+            });
+        };
+
+        s.touchEnded = () => {
+            symbols.forEach(symbol => {
+                symbol.black = false;
+            });
+        }
     };
 
 }
