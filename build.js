@@ -2,7 +2,7 @@ var path = require("path");
 var Builder = require('systemjs-builder');
 
 // Bundle just our app into a single file, app.js. Do not include dependencies.
-var src = '[./src/**/*.ts]';
+var src = './src/**/*.coffee';
 var dest = './dist/js/app.js';
 var opts = {
   minify: false,
