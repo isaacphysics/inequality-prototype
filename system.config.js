@@ -20,16 +20,19 @@ System.config({
 		app: 'src/app',
 		jquery: 'node_modules/jquery/dist/jquery.min.js',
 		bootstrap: 'node_modules/bootstrap/dist/js/bootstrap.min.js',
-		"sketch-js": 'node_modules/sketch-js/js/sketch.min.js'
+		p5: 'node_modules/p5/lib/p5.min.js'
 	},
 
 	// Define any dependencies of legacy libraries, and make sure some are imported globally.
 	meta: {
+		'p5': {
+			format: 'global'
+		},
 		'bootstrap': {
 			deps: ['tether', 'jquery'],
 		},
 		'app/*': {
-			deps: ['jquery', 'sketch-js'],
+			deps: ['jquery', 'p5'],
 			loader: 'coffee-loader.js'
 		}
 	}

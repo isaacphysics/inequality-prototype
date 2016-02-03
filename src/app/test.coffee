@@ -1,12 +1,15 @@
-module.exports = class coffeeTest
-  constructor: (@message) ->
-  go: (count) ->
-    console.log 'go'
-    out = ""
-    for i in [1..count]
-      out += "#{@message} #{i}! "
-    return out
 
-app = new coffeeTest("This message");
+myp = new p5 (p)->
+  p.setup = ->
+    p.createCanvas p.windowWidth, p.windowHeight
+    p.frameRate 60
 
-console.log(app.go(10));
+  p.draw = ->
+    if p.mouseIsPressed
+      p.fill p.random 255
+    else
+      p.stroke "dodgerBlue"
+      p.fill 255
+    p.ellipse p.mouseX, p.mouseY, 80, 80
+
+ 
