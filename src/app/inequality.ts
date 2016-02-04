@@ -27,7 +27,7 @@ module Inequality {
     'use strict';
 
     class Symbol {
-        private s: any;
+        private p: any;
 
         id: number = -1;
         position: p5.Vector;
@@ -35,16 +35,16 @@ module Inequality {
 
         dockingPoints: Array<p5.Vector> = [];
 
-        constructor(s: any) {
+        constructor(p: any, private s: any) {
             // Take a new unique id for this symbol
             this.id = ++wId;
             // This is weird but necessary: this.s will be the sketch function
-            this.s = s;
+            this.p = p;
             // Default position is [0, 0]
-            this.position = s.createVector(0, 0);
+            this.position = p.createVector(0, 0);
 
             this.dockingPoints = iRange(0, 7).map((n) => {
-                return s.createVector(Math.cos((n/4) * Math.PI), Math.sin((n/4) * Math.PI));
+                return p.createVector(Math.cos((n/4) * Math.PI), Math.sin((n/4) * Math.PI));
             });
         }
 
@@ -53,109 +53,91 @@ module Inequality {
             if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {
                 alpha = 127;
             }
-            this.s.stroke(0,0,0,alpha);
-            this.s.fill(255,255,255,alpha);
-            this.s.ellipse(this.position.x, this.position.y, 50, 50);
 
             this.dockingPoints.forEach(point => {
-                this.s.fill(255,0,0,alpha);
-                this.s.noStroke();
-                this.s.ellipse(this.position.x + 30*point.x, this.position.y + 30*point.y, 10, 10);
+                this.p.stroke(0, 127, 255, alpha * 0.5);
+                this.p.noFill();
+                this.p.ellipse(this.position.x + 35*point.x, this.position.y + 35*point.y, 10, 10);
             });
+
+            this.p.stroke(0, 63, 127, alpha);
+            this.p.fill(255, 255, 255, alpha);
+            this.p.ellipse(this.position.x, this.position.y, 50, 50);
         }
     }
 
+    // This is the "main" app with the update/render loop and all that jazz.
     export class MySketch {
         symbols: Array<Symbol>;
         movingSymbol = null;
         ptouch: p5.Vector = null;
-        myp5 = null;
 
-        constructor(myp5) {
-            this.myp5 = myp5;
-            debugger;
+        constructor(private p) {
+            this.p.setup = this.setup;
+            this.p.draw = this.draw;
+            this.p.touchStarted = this.touchStarted;
+            this.p.touchMoved = this.touchMoved;
+            this.p.touchEnded = this.touchEnded;
         }
 
         setup = () => {
             this.symbols = []
-            this.myp5.createCanvas(800, 600);
-            for(var i = 0; i < 12; ++i) {
-                var symbol = new Symbol(s);
-                symbol.position.x = 100 + 100*(i%4);
-                symbol.position.y = 100 + 100*(Math.floor(i/4));
+            this.p.createCanvas(800, 600);
+            for(var i = 0; i < 60; ++i) {
+                var symbol = new Symbol(this.p, this);
+                symbol.position.x = 100 + 100*(i%12);
+                symbol.position.y = 100 + 100*(Math.floor(i/12));
                 this.symbols.push(symbol);
             }
-            this.ptouch = this.myp5.createVector(0,0);
+            this.ptouch = this.p.createVector(0,0);
         };
 
         draw = () => {
-            this.myp5.background(255*0.95);
+            this.p.background(255);
             this.symbols.forEach(symbol => {
-                symbol.display();
-            });
-        };
-    }
-
-    // This is the "main" app with the update/render loop and all that jazz.
-    export var sketch = function (s: any): void {
-
-        var symbols: Array<Symbol>;
-        s.movingSymbol = null;
-
-        var ptouch: p5.Vector = null;
-
-        s.setup = () => {
-            symbols = []
-            s.createCanvas(800, 600);
-            for(var i = 0; i < 12; ++i) {
-                var symbol = new Symbol(s);
-                symbol.position.x = 100 + 100*(i%4);
-                symbol.position.y = 100 + 100*(Math.floor(i/4));
-                symbols.push(symbol);
-            }
-            ptouch = s.createVector(0,0);
-        };
-
-        s.draw = () => {
-            s.background(255*0.95);
-            symbols.forEach(symbol => {
                 symbol.display();
             });
         };
 
         // Executive (and possibly temporary) decision: we are moving one symbol at a time (meaning: no multi-touch)
         // Native ptouchX and ptouchY are not accurate because they are based on the "previous frame".
-        s.touchStarted = () => {
-            symbols.forEach(symbol => {
-                if(p5.Vector.dist(symbol.position, s.createVector(s.touchX, s.touchY)) < 25) {
+        touchStarted = () => {
+            this.movingSymbol = null;
+            var index = -1;
+            this.symbols.forEach((symbol, i) => {
+                if(p5.Vector.dist(symbol.position, this.p.createVector(this.p.touchX, this.p.touchY)) < 25) {
                     // If we hit that symbol, then mark it as moving
-                    s.movingSymbol = symbol;
-                    // movingSymbol.isMoving = true;
-                    ptouch = s.createVector(s.touchX, s.touchY);
-                    return;
+                    this.movingSymbol = symbol;
+                    index = i;
+                    this.ptouch = this.p.createVector(this.p.touchX, this.p.touchY);
                 }
             });
+            if(index > -1) {
+                var e = this.symbols.splice(index, 1)[0];
+                this.symbols.push(e);
+                index = -1;
+            }
         };
 
-        s.touchMoved = () => {
-            if(s.movingSymbol != null) {
-                var d = s.createVector(s.touchX - ptouch.x, s.touchY - ptouch.y);
-                s.movingSymbol.position.add(d);
-                ptouch.x = s.touchX;
-                ptouch.y = s.touchY;
+        touchMoved = () => {
+            if(this.movingSymbol != null) {
+                var d = this.p.createVector(this.p.touchX - this.ptouch.x, this.p.touchY - this.ptouch.y);
+                this.movingSymbol.position.add(d);
+                this.ptouch.x = this.p.touchX;
+                this.ptouch.y = this.p.touchY;
             }
         }
 
-        s.touchEnded = () => {
+        touchEnded = () => {
             // When touches end, unmark the symbol as moving.
-            s.movingSymbol = null;
-            ptouch = null;
+            this.movingSymbol = null;
+            this.ptouch = null;
             // symbols.forEach(symbol => {
             //     symbol.isMoving = false;
             // });
         }
-    };
+    }
 }
 
-var myp5 = new p5( (p) => new Inequality.MySketch(p) );
-myp5.resizeCanvas($('body').width(), $('body').height());
+var p = new p5( (p) => new Inequality.MySketch(p) );
+p.resizeCanvas($('body').width(), $('body').height());
