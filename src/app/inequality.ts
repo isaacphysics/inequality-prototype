@@ -3,6 +3,21 @@
 /* tslint:disable: no-unused-variable */
 /* tslint:disable: comment-format */
 
+///////// UTILS.TS
+
+function iRange(from: number, to: number, includeLast: boolean = true) {
+    var a = [];
+    var j: number = includeLast ? to+1 : to;
+    return Array.apply(null, Array(j - from)).map(function(_, i) { return i; });
+}
+
+function saneRound(n: number, dp: number = 0) {
+    var p = Math.pow(10, dp);
+    return Math.round(n * p) / p;
+}
+
+//////// THEREST.TS
+
 // This is meant to be a static global thingie for uniquely identifying widgets/symbols
 // This may very well be a relic of my C++ multi-threaded past, but it served me well so far...
 export var wId = 0;
@@ -14,10 +29,11 @@ module Inequality {
     class Symbol {
         private s: any;
 
-        id: number;
+        id: number = -1;
         position: p5.Vector;
+        isMoving: boolean = false;
 
-        black: bool;
+        dockingPoints: Array<p5.Vector> = [];
 
         constructor(s: any) {
             // Take a new unique id for this symbol
@@ -26,24 +42,67 @@ module Inequality {
             this.s = s;
             // Default position is [0, 0]
             this.position = s.createVector(0, 0);
+
+            this.dockingPoints = iRange(0, 7).map((n) => {
+                return s.createVector(Math.cos((n/4) * Math.PI), Math.sin((n/4) * Math.PI));
+            });
         }
 
-        display(): void {
-            this.s.stroke(0);
-            if(this.black) {
-                this.s.fill(0);
-            } else {
-                this.s.fill(255);
+        display = () => {
+            var alpha = 255;
+            if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {
+                alpha = 127;
             }
+            this.s.stroke(0,0,0,alpha);
+            this.s.fill(255,255,255,alpha);
             this.s.ellipse(this.position.x, this.position.y, 50, 50);
+
+            this.dockingPoints.forEach(point => {
+                this.s.fill(255,0,0,alpha);
+                this.s.noStroke();
+                this.s.ellipse(this.position.x + 30*point.x, this.position.y + 30*point.y, 10, 10);
+            });
         }
+    }
+
+    export class MySketch {
+        symbols: Array<Symbol>;
+        movingSymbol = null;
+        ptouch: p5.Vector = null;
+        myp5 = null;
+
+        constructor(myp5) {
+            this.myp5 = myp5;
+            debugger;
+        }
+
+        setup = () => {
+            this.symbols = []
+            this.myp5.createCanvas(800, 600);
+            for(var i = 0; i < 12; ++i) {
+                var symbol = new Symbol(s);
+                symbol.position.x = 100 + 100*(i%4);
+                symbol.position.y = 100 + 100*(Math.floor(i/4));
+                this.symbols.push(symbol);
+            }
+            this.ptouch = this.myp5.createVector(0,0);
+        };
+
+        draw = () => {
+            this.myp5.background(255*0.95);
+            this.symbols.forEach(symbol => {
+                symbol.display();
+            });
+        };
     }
 
     // This is the "main" app with the update/render loop and all that jazz.
     export var sketch = function (s: any): void {
 
         var symbols: Array<Symbol>;
-        var movingSymbol: Symbol = null;
+        s.movingSymbol = null;
+
+        var ptouch: p5.Vector = null;
 
         s.setup = () => {
             symbols = []
@@ -54,6 +113,7 @@ module Inequality {
                 symbol.position.y = 100 + 100*(Math.floor(i/4));
                 symbols.push(symbol);
             }
+            ptouch = s.createVector(0,0);
         };
 
         s.draw = () => {
@@ -64,31 +124,38 @@ module Inequality {
         };
 
         // Executive (and possibly temporary) decision: we are moving one symbol at a time (meaning: no multi-touch)
-        // The geometry is not super accurate, might be worth investigating if mouse info comes through on touches as well.
+        // Native ptouchX and ptouchY are not accurate because they are based on the "previous frame".
         s.touchStarted = () => {
             symbols.forEach(symbol => {
                 if(p5.Vector.dist(symbol.position, s.createVector(s.touchX, s.touchY)) < 25) {
                     // If we hit that symbol, then mark it as moving
-                    movingSymbol = symbol;
+                    s.movingSymbol = symbol;
+                    // movingSymbol.isMoving = true;
+                    ptouch = s.createVector(s.touchX, s.touchY);
+                    return;
                 }
             });
         };
 
         s.touchMoved = () => {
-            if(movingSymbol != null) {
-                var d = s.createVector(s.touchX - s.ptouchX, s.touchY - s.ptouchY);
-                console.log(d);
-                movingSymbol.position.add(d.div(2));
+            if(s.movingSymbol != null) {
+                var d = s.createVector(s.touchX - ptouch.x, s.touchY - ptouch.y);
+                s.movingSymbol.position.add(d);
+                ptouch.x = s.touchX;
+                ptouch.y = s.touchY;
             }
         }
 
         s.touchEnded = () => {
             // When touches end, unmark the symbol as moving.
-            movingSymbol = null;
+            s.movingSymbol = null;
+            ptouch = null;
+            // symbols.forEach(symbol => {
+            //     symbol.isMoving = false;
+            // });
         }
     };
-
 }
 
-var myp5 = new p5(Inequality.sketch);
+var myp5 = new p5( (p) => new Inequality.MySketch(p) );
 myp5.resizeCanvas($('body').width(), $('body').height());
