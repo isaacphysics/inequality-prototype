@@ -52,13 +52,13 @@ module Inequality {
             var alpha = 255;
             if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {
                 alpha = 127;
+            } else {
+                this.dockingPoints.forEach(point => {
+                    this.p.stroke(0, 127, 255, alpha * 0.5);
+                    this.p.noFill();
+                    this.p.ellipse(this.position.x + 35*point.x, this.position.y + 35*point.y, 10, 10);
+                });
             }
-
-            this.dockingPoints.forEach(point => {
-                this.p.stroke(0, 127, 255, alpha * 0.5);
-                this.p.noFill();
-                this.p.ellipse(this.position.x + 35*point.x, this.position.y + 35*point.y, 10, 10);
-            });
 
             this.p.stroke(0, 63, 127, alpha);
             this.p.fill(255, 255, 255, alpha);
