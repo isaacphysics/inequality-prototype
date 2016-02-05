@@ -26,7 +26,7 @@ export var wId = 0;
 module Inequality {
     'use strict';
 
-    class Symbol {
+    class Widget {
         private p: any;
 
         id: number = -1;
@@ -34,6 +34,8 @@ module Inequality {
         isMoving: boolean = false;
 
         dockingPoints: Array<p5.Vector> = [];
+        dockingPointFactors: Array<number> = [];
+        dockingPointTypes: Array<string> = [];
 
         constructor(p: any, private s: any) {
             // Take a new unique id for this symbol
@@ -43,12 +45,18 @@ module Inequality {
             // Default position is [0, 0]
             this.position = p.createVector(0, 0);
 
-            this.dockingPoints = iRange(0, 7).map((n) => {
-                return p.createVector(Math.cos((n/4) * Math.PI), Math.sin((n/4) * Math.PI));
+            this.dockingPoints = iRange(0, 7).map( n => {
+                return p.createVector(Math.cos((n/4) * Math.PI), Math.sin((n/4) * Math.PI)).mult(40);
+            });
+            this.dockingPointFactors = iRange(0,7).map( n => {
+                return 1.0;
+            });
+            this.dockingPointTypes = iRange(0,7).map( n => {
+                return "null";
             });
         }
 
-        display = () => {
+        display() {
             var alpha = 255;
             if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {
                 alpha = 127;
@@ -56,7 +64,7 @@ module Inequality {
                 this.dockingPoints.forEach(point => {
                     this.p.stroke(0, 127, 255, alpha * 0.5);
                     this.p.noFill();
-                    this.p.ellipse(this.position.x + 35*point.x, this.position.y + 35*point.y, 10, 10);
+                    this.p.ellipse(this.position.x + point.x, this.position.y + point.y, 10, 10);
                 });
             }
 
@@ -66,9 +74,25 @@ module Inequality {
         }
     }
 
+    class Symbol extends Widget {
+        constructor(p: any, private s: any) {
+            super(p, s);
+
+            this.dockingPoints = [0, 1, 4, 7].map((n) => {
+                return p.createVector(Math.cos((n/4) * Math.PI), Math.sin((n/4) * Math.PI)).mult(40);
+            });
+            this.dockingPointFactors = [1.0, 0.8, 1.0, 0.8];
+            this.dockingPointTypes = ['operand', 'exponent', 'operand', 'subscript'];
+        }
+
+        display() {
+            super.display();
+        }
+    }
+
     // This is the "main" app with the update/render loop and all that jazz.
     export class MySketch {
-        symbols: Array<Symbol>;
+        symbols: Array<Widget>;
         movingSymbol = null;
         ptouch: p5.Vector = null;
 
