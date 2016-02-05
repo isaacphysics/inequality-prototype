@@ -9,7 +9,7 @@ System.config({
 	transpiler: 'typescript',
 
 	typescriptOptions: {
-		"sourceMap": false,
+		"sourceMap": true,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"removeComments": false,
