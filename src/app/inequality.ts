@@ -28,14 +28,18 @@ module Inequality {
 
     class Widget {
         private p: any;
+        private radius = 50;
 
         id: number = -1;
         position: p5.Vector;
         isMoving: boolean = false;
 
         dockingPoints: Array<p5.Vector> = [];
-        dockingPointFactors: Array<number> = [];
+        dockingPointScales: Array<number> = [];
         dockingPointTypes: Array<string> = [];
+        docksTo: Array<string> = [];
+
+        children: Array<Widget> = [];
 
         constructor(p: any, private s: any) {
             // Take a new unique id for this symbol
@@ -48,45 +52,87 @@ module Inequality {
             this.dockingPoints = iRange(0, 7).map( n => {
                 return p.createVector(Math.cos((n/4) * Math.PI), Math.sin((n/4) * Math.PI)).mult(40);
             });
-            this.dockingPointFactors = iRange(0,7).map( n => {
+            this.dockingPointScales = iRange(0,7).map( n => {
                 return 1.0;
             });
             this.dockingPointTypes = iRange(0,7).map( n => {
-                return "null";
+                return null;
+            });
+            this.docksTo = [];
+            this.children = iRange(0,7).map( n => {
+                return null;
             });
         }
 
-        display() {
+        display(scale: number) {
             var alpha = 255;
             if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {
                 alpha = 127;
-            } else {
-                this.dockingPoints.forEach(point => {
+            }
+            this.children.forEach( (child, index) => {
+                if(child == null) {
+                    // There is no child to paint, let's paint an empty docking point
+                    var point = this.dockingPoints[index];
                     this.p.stroke(0, 127, 255, alpha * 0.5);
                     this.p.noFill();
-                    this.p.ellipse(this.position.x + point.x, this.position.y + point.y, 10, 10);
-                });
-            }
+                    this.p.ellipse(this.position.x + scale*point.x, this.position.y + scale*point.y, scale*20, scale*20);
+                } else {
+                    // There is a child, so let's just draw it...
+                    child.display(this.dockingPointScales[index]);
+                }
+            });
 
             this.p.stroke(0, 63, 127, alpha);
             this.p.fill(255, 255, 255, alpha);
-            this.p.ellipse(this.position.x, this.position.y, 50, 50);
+            this.p.ellipse(this.position.x, this.position.y, scale*2*this.radius, scale*2*this.radius);
+        }
+
+        hit(p: p5.Vector): Widget {
+            // FIXME This is all wrong.
+            var w = null;
+            this.children.some( child => {
+                if(child != null) {
+                    var w = child.hit(p);
+                    if(w != null) {
+                        return true
+                    }
+                }
+            });
+            if(w != null) {
+                return w;
+            }
+            if(p5.Vector.dist(p, this.position) < this.radius) {
+                return this;
+            }
+            return null;
+        }
+
+        moveBy(d: p5.Vector) {
+            this.position.add(d);
+            this.children.forEach( child => {
+                if(child != null) {
+                    child.moveBy(d);
+                }
+            });
         }
     }
 
+    // Symbol may not be the best name, after all.
     class Symbol extends Widget {
         constructor(p: any, private s: any) {
             super(p, s);
 
             this.dockingPoints = [0, 1, 4, 7].map((n) => {
-                return p.createVector(Math.cos((n/4) * Math.PI), Math.sin((n/4) * Math.PI)).mult(40);
+                return p.createVector(Math.cos((n/4) * Math.PI), Math.sin((n/4) * Math.PI)).mult(80);
             });
-            this.dockingPointFactors = [1.0, 0.8, 1.0, 0.8];
-            this.dockingPointTypes = ['operand', 'exponent', 'operand', 'subscript'];
+            this.dockingPointScales = [1.0, 0.6, 1.0, 0.6];
+            this.dockingPointTypes = ['operator', 'exponent', 'operator', 'subscript'];
+            this.docksTo = ['symbol', 'operator', 'exponent', 'subscript'];
+            this.children = [null, null, null, null];
         }
 
-        display() {
-            super.display();
+        display(scale: number = 1.0) {
+            super.display(scale);
         }
     }
 
@@ -107,12 +153,15 @@ module Inequality {
         setup = () => {
             this.symbols = []
             this.p.createCanvas(800, 600);
-            for(var i = 0; i < 60; ++i) {
-                var symbol = new Symbol(this.p, this);
-                symbol.position.x = 100 + 100*(i%12);
-                symbol.position.y = 100 + 100*(Math.floor(i/12));
-                this.symbols.push(symbol);
-            }
+            var a = new Symbol(this.p, this);
+            a.position.x = this.p.width/2;
+            a.position.y = this.p.height/2;
+            this.symbols.push(a);
+            var b = new Symbol(this.p, this);
+            b.position.x = this.p.width/2 + 300;
+            b.position.y = this.p.height/2;
+            a.children[1] = b;
+            // this.symbols.push(symbol);
             this.ptouch = this.p.createVector(0,0);
         };
 
@@ -129,9 +178,10 @@ module Inequality {
             this.movingSymbol = null;
             var index = -1;
             this.symbols.forEach((symbol, i) => {
-                if(p5.Vector.dist(symbol.position, this.p.createVector(this.p.touchX, this.p.touchY)) < 25) {
+                var hitSymbol = symbol.hit(this.p.createVector(this.p.touchX, this.p.touchY));
+                if(hitSymbol != null) {
                     // If we hit that symbol, then mark it as moving
-                    this.movingSymbol = symbol;
+                    this.movingSymbol = hitSymbol;
                     index = i;
                     this.ptouch = this.p.createVector(this.p.touchX, this.p.touchY);
                 }
@@ -146,7 +196,7 @@ module Inequality {
         touchMoved = () => {
             if(this.movingSymbol != null) {
                 var d = this.p.createVector(this.p.touchX - this.ptouch.x, this.p.touchY - this.ptouch.y);
-                this.movingSymbol.position.add(d);
+                this.movingSymbol.moveBy(d);
                 this.ptouch.x = this.p.touchX;
                 this.ptouch.y = this.p.touchY;
             }
@@ -156,9 +206,6 @@ module Inequality {
             // When touches end, unmark the symbol as moving.
             this.movingSymbol = null;
             this.ptouch = null;
-            // symbols.forEach(symbol => {
-            //     symbol.isMoving = false;
-            // });
         }
     }
 }
