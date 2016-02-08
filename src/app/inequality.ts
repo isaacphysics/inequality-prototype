@@ -161,7 +161,7 @@ module Inequality {
             b.position.x = this.p.width/2 + 300;
             b.position.y = this.p.height/2;
             a.children[1] = b;
-            // this.symbols.push(symbol);
+
             this.ptouch = this.p.createVector(0,0);
         };
 
