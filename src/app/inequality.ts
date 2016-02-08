@@ -177,6 +177,7 @@ module Inequality {
         touchStarted = () => {
             this.movingSymbol = null;
             var index = -1;
+			var movingSymbolDocksTo: Array<string> = [];
             this.symbols.some((symbol, i) => {
                 var hitSymbol = symbol.hit(this.p.createVector(this.p.touchX, this.p.touchY));
                 if(hitSymbol != null) {
@@ -184,16 +185,28 @@ module Inequality {
                     this.movingSymbol = hitSymbol;
                     index = i;
                     this.ptouch = this.p.createVector(this.p.touchX, this.p.touchY);
+
+					// TODO Remove symbol from the hierarchy, place it back with the roots.
+					//     would probably need a parent pointer and a removeFromParent thingie, for sanity.
 					
+					// Get the points it docks to, we'll use them later
+					movingSymbolDocksTo = this.movingSymbol.docksTo;
+
 					// Array.some requires this to break out of the loop.
 					return true;
                 }
             });
-            if(index > -1) {
+            
+			// TODO Put the moving symbol on top (bottom?) of the list (this only works with roots,
+			// and may not be necessary at all, but eye candy, right?
+			if(index > -1) {
                 var e = this.symbols.splice(index, 1)[0];
                 this.symbols.push(e);
                 index = -1;
             }
+			
+			// TODO Tell the other symbols to highlight only these points. Achievement unlocked: Usability!
+			// Achievement unlocked: Not actually doing anything because I'm squeezed on a train right now.
         };
 
         touchMoved = () => {
@@ -203,12 +216,16 @@ module Inequality {
                 this.ptouch.x = this.p.touchX;
                 this.ptouch.y = this.p.touchY;
             }
+			
+			// TODO MAYBE Check if we are moving close to a docking point, and highlight it.
         }
 
         touchEnded = () => {
             // When touches end, unmark the symbol as moving.
             this.movingSymbol = null;
             this.ptouch = null;
+			
+			// TODO Docking logic goes here.
         }
     }
 }
