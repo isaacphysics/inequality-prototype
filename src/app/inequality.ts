@@ -88,13 +88,13 @@ module Inequality {
         }
 
         hit(p: p5.Vector): Widget {
-            // FIXME This is all wrong.
             var w = null;
+			// TODO Check whether some or anything else is OK, but this works for now.
             this.children.some( child => {
                 if(child != null) {
-                    var w = child.hit(p);
+                    w = child.hit(p);
                     if(w != null) {
-                        return true
+                        return true;
                     }
                 }
             });
