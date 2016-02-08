@@ -50,7 +50,9 @@ module Inequality {
             this.position = p.createVector(0, 0);
 
             this.dockingPoints = iRange(0, 7).map( n => {
-                return p.createVector(Math.cos((n/4) * Math.PI), Math.sin((n/4) * Math.PI)).mult(40);
+				// Yes, there is a minus sign over there, because the y-axis is flipped.
+				// Thank you, analog TV.
+                return p.createVector(Math.cos((n/8) * 2*Math.PI), -Math.sin((n/8) * 2*Math.PI)).mult(80);
             });
             this.dockingPointScales = iRange(0,7).map( n => {
                 return 1.0;
@@ -123,7 +125,10 @@ module Inequality {
             super(p, s);
 
             this.dockingPoints = [0, 1, 4, 7].map((n) => {
-                return p.createVector(Math.cos((n/4) * Math.PI), Math.sin((n/4) * Math.PI)).mult(80);
+				// Mind the minus sign.
+				var v = p.createVector(Math.cos((n/8) * 2*Math.PI), -Math.sin((n/8) * 2*Math.PI)).mult(80);
+				console.log(n + " " + v);
+                return v;
             });
             this.dockingPointScales = [1.0, 0.6, 1.0, 0.6];
             this.dockingPointTypes = ['operator', 'exponent', 'operator', 'subscript'];
