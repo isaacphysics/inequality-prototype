@@ -177,13 +177,16 @@ module Inequality {
         touchStarted = () => {
             this.movingSymbol = null;
             var index = -1;
-            this.symbols.forEach((symbol, i) => {
+            this.symbols.some((symbol, i) => {
                 var hitSymbol = symbol.hit(this.p.createVector(this.p.touchX, this.p.touchY));
                 if(hitSymbol != null) {
                     // If we hit that symbol, then mark it as moving
                     this.movingSymbol = hitSymbol;
                     index = i;
                     this.ptouch = this.p.createVector(this.p.touchX, this.p.touchY);
+					
+					// Array.some requires this to break out of the loop.
+					return true;
                 }
             });
             if(index > -1) {
