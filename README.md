@@ -47,3 +47,6 @@ more sophisticated. For example
   dragging ends, thus clicking/tapping on a docked symbol away from a docking
   point undocks the symbol. A more comprehensive hit test (i.e., overlap) might
   be nice.
+
+**[Addendum to 09.02.2016]** Nope, not going to deal with siblings and binary
+operation docking points.
