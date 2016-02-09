@@ -108,13 +108,11 @@ module Inequality {
 		}
 		
 		removeFromParent() {
-			console.log(this.parentWidget);
 			this.parentWidget.removeChild(this);
 			this.parentWidget = null;
 		}
 		
 		removeChild(child: Widget) {
-			console.log(this.children);
 			this.children = this.children.map( (e: Widget) => {
 				if(e != null && child.id == e.id) {
 					return null;
@@ -122,7 +120,6 @@ module Inequality {
 					return e;
 				}
 			});
-			console.log(this.children);
 		}
 
         hit(p: p5.Vector): Widget {
