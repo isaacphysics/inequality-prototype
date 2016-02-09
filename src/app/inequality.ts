@@ -275,15 +275,23 @@ module Inequality {
                 this.ptouch.x = this.p.touchX;
                 this.ptouch.y = this.p.touchY;
 				
-				// TODO MAYBE Check if we are moving close to a docking point, and highlight it even more.
+				// Check if we are moving close to a docking point, and highlight it even more.
 	            this.symbols.some( (symbol, i) => {
+					// FIXME This is truly awful.
+					symbol.highlightDockingPoint = -1;
+					// This is the point where the mouse/touch is.
 					var hitPoint = this.p.createVector(this.p.touchX, this.p.touchY);
+					// Let's find a symbol that is close enough for us to be close to its docking points
 	                var hitSymbol = symbol.externalHit(hitPoint);
 	                if(hitSymbol != null && hitSymbol.id != this.movingSymbol.id) {
+						// If we found a viable candidate, let's get its docking points and see if we're over any of them
 						var dockingPoints = hitSymbol.dockingPoints;
 						dockingPoints.some( (point, j) => {
-							if(point.add(hitSymbol.position).dist(hitPoint) < 10) {
+							var dp = p5.Vector.add(point, hitSymbol.position);
+							if(dp.dist(hitPoint) < 10) {
+								// If we are, let's highlight it!
 								hitSymbol.highlightDockingPoint = j;
+								return true;
 							}
 						});
 						return true;
@@ -293,14 +301,49 @@ module Inequality {
         }
 
         touchEnded = () => {
-            // When touches end, unmark the symbol as moving.
-            this.movingSymbol = null;
-            this.ptouch = null;
+			if(this.movingSymbol != null) {
+	            // When touches end, unmark the symbol as moving.
+				var formerlyMovingSymbol = this.movingSymbol;
+	            this.movingSymbol = null;
+	            this.ptouch = null;
 			
-			// TODO Reset docking highlight
+				var shouldRemoveFromRoots = false;
 			
-			// TODO Docking logic goes here.
-        }
+				// I don't like having to do this again, but hey...
+	            this.symbols.some( (symbol, i) => {
+					// This is the point where the mouse/touch is.
+					var hitPoint = this.p.createVector(this.p.touchX, this.p.touchY);
+					// Let's find a symbol that is close enough for us to be close to its docking points
+	                var hitSymbol = symbol.externalHit(hitPoint);
+	                if(hitSymbol != null && hitSymbol.id != formerlyMovingSymbol.id) {
+						// If we found a viable candidate, let's get its docking points and see if we dropped on top of any of them
+						var dockingPoints = hitSymbol.dockingPoints;
+						dockingPoints.some( (point, j) => {
+							var dp = p5.Vector.add(point, hitSymbol.position);
+							if(dp.dist(hitPoint) < 10) {
+								// Reasonably assuming that the hitSymbol is the one with the dirty highlighter, so let's clear it
+								hitSymbol.highlightDockingPoint = -1;
+								// Actually dock the moving symbol that we just dropped
+								hitSymbol.setChild(j, formerlyMovingSymbol);
+								// Some animation would be nice here...
+								formerlyMovingSymbol.position = dp;
+								// The symbol we've been moving had been put with the roots, so if we did dock it,
+								// we might also want to remove it from the roots, as it's not a root anymore.
+								shouldRemoveFromRoots = true;
+								return true;
+							}
+						});
+						return true;
+					}
+				}
+				// Doing the remove-from-roots thing here to avoid messing up the array of roots.
+				if(shouldRemoveFromRoots) {
+					this.symbols = this.symbols.filter( (e) => {
+						return e.id != formerlyMovingSymbol.id;
+					});
+				}
+	        }
+		}
     }
 }
 
