@@ -56,6 +56,7 @@ module Inequality {
         dockingPointTypes: Array<string> = [];
         docksTo: Array<string> = [];
 		highlightDockingPoint: number = -1;
+		dockingPointsToDraw: Array<string> = [];
 
         children: Array<Widget> = [];
 		parentWidget: Widget = null;
@@ -96,14 +97,17 @@ module Inequality {
 			this.children.forEach( (child, index) => {
 				if(child == null) {
 	                // There is no child to paint, let's paint an empty docking point
-	                var point = this.dockingPoints[index];
-	                this.p.stroke(0, 127, 255, alpha * 0.5);
-					if(index == this.highlightDockingPoint) {
-						this.p.fill(127, 192, 255);
-					} else {
-						this.p.noFill();
+					var type = this.dockingPointTypes[index];
+					var point = this.dockingPoints[index];
+					if(this.dockingPointsToDraw.indexOf(type) > -1) {
+		                this.p.stroke(0, 127, 255, alpha * 0.5);
+						if(index == this.highlightDockingPoint) {
+							this.p.fill(127, 192, 255);
+						} else {
+							this.p.noFill();
+						}
+		                this.p.ellipse(this.position.x + scale*point.x, this.position.y + scale*point.y, scale*20, scale*20);
 					}
-	                this.p.ellipse(this.position.x + scale*point.x, this.position.y + scale*point.y, scale*20, scale*20);
 				}
 			});
 			// Curses, you painter's algorithm!
@@ -118,6 +122,24 @@ module Inequality {
             this.p.fill(255, 255, 255, alpha);
             this.p.ellipse(this.position.x, this.position.y, scale*2*this.radius, scale*2*this.radius);
         }
+		
+		setDockingPointsToDraw(points: Array<string>) {
+			this.children.forEach( child => {
+				if(child != null) {
+					child.setDockingPointsToDraw(points);
+				}
+			});
+			this.dockingPointsToDraw = points;
+		}
+		
+		clearDockingPointsToDraw() {
+			this.children.forEach( child => {
+				if(child != null) {
+					child.setDockingPointsToDraw([]);
+				}
+			});
+			this.dockingPointsToDraw = [];
+		}
 		
 		setChild(dockingPointIndex: number, child: Widget) {
 			this.children[dockingPointIndex] = child;
@@ -252,7 +274,7 @@ module Inequality {
             this.movingSymbol = null;
             var index = -1;
 			var movingSymbolDocksTo: Array<string> = [];
-            this.symbols.some((symbol, i) => {
+            this.symbols.some( (symbol, i) => {
                 var hitSymbol = symbol.hit(this.p.createVector(this.p.touchX, this.p.touchY));
                 if(hitSymbol != null) {
                     // If we hit that symbol, then mark it as moving
@@ -283,6 +305,9 @@ module Inequality {
             }
 			
 			// TODO Tell the other symbols to show only these points. Achievement unlocked: Usability!
+			this.symbols.forEach( (symbol) => {
+				symbol.setDockingPointsToDraw(movingSymbolDocksTo);
+			});
         };
 
         touchMoved = () => {
@@ -359,6 +384,11 @@ module Inequality {
 						return e.id != formerlyMovingSymbol.id;
 					});
 				}
+				
+				// Reset rendering of docking points
+				this.symbols.forEach( (symbol) => {
+					symbol.clearDockingPointsToDraw();
+				});
 	        }
 		}
     }
