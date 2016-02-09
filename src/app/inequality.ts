@@ -99,7 +99,7 @@ module Inequality {
 	                var point = this.dockingPoints[index];
 	                this.p.stroke(0, 127, 255, alpha * 0.5);
 					if(index == this.highlightDockingPoint) {
-						this.p.fill(0);
+						this.p.fill(127, 192, 255);
 					} else {
 						this.p.noFill();
 					}
