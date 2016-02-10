@@ -14,7 +14,6 @@ System.config({
 		"experimentalDecorators": true,
 		"removeComments": false,
 		"noImplicitlyAny": false,
-		"moduleResolution": "node"
 	},
 
 	// Configure default extensions so we can use old-style imports.
