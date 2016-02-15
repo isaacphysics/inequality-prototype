@@ -5,7 +5,8 @@
     "systemjs": "0.19.6",
     "jquery": "2.2.0",
     "reflect-metadata": "0.1.2",
-    "p5": "0.4.21"
+    "p5": "0.4.21",
+	"underscore": "1.8.3"
   },
   "devDependencies": {
     "typescript": "1.7.5",

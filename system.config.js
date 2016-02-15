@@ -31,7 +31,8 @@ System.config({
 		jquery: 'node_modules/jquery/dist/jquery.min.js',
 		bootstrap: 'node_modules/bootstrap/dist/js/bootstrap.min.js',
 		reflect: 'node_modules/reflect-metadata/Reflect.js',
-		p5: 'node_modules/p5/lib/p5.min.js'
+		p5: 'node_modules/p5/lib/p5.min.js',
+		underscore: 'node_modules/underscore/underscore-min.js'
 	},
 
 	// Define any dependencies of legacy libraries, and make sure some are imported globally.
@@ -48,8 +49,11 @@ System.config({
 		'bootstrap': {
 			deps: ['tether', 'jquery'],
 		},
+		'underscore': {
+			format: 'global'
+		},
 		'src/app/*': {
-			deps: ['jquery', 'p5'],
+			deps: ['jquery', 'p5', 'underscore'],
 			format: 'es6'
 		}
 	}

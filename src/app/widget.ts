@@ -32,22 +32,16 @@ class Widget {
 		// Default position is [0, 0]
 		this.position = p.createVector(0, 0);
 
-		this.dockingPoints = iRange(0, 7).map( n => {
+		this.dockingPoints = _.range(0, 7).map( n => {
 			// Yes, there is a minus sign over there, because the y-axis is flipped.
 			// Thank you, analog TV.
 			// FIXME 80 is hardcoded (look further down too!)
 			return p.createVector(Math.cos( (n/8) * 2*Math.PI), -Math.sin( (n/8) * 2*Math.PI)).mult(80);
 		});
-		this.dockingPointScales = iRange(0,7).map( n => {
-			return 1.0;
-		});
-		this.dockingPointTypes = iRange(0,7).map( n => {
-			return null;
-		});
+		this.dockingPointScales = _.range(0,7).map( n => { return 1.0; });
+		this.dockingPointTypes = _.range(0,7).map( n => { return null; });
 		this.docksTo = [];
-		this.children = iRange(0,7).map( n => {
-			return null;
-		});
+		this.children = _.range(0,7).map( n => { return null; });
 	}
 
 	display(scale: number) {
@@ -115,7 +109,7 @@ class Widget {
 	}
 	
 	removeChild(child: Widget) {
-		this.children = this.children.map( (e: Widget) => {
+		this.children = this.children.map( e: Widget => {
 			if(e != null && child.id == e.id) {
 				return null;
 			} else {
