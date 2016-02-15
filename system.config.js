@@ -13,14 +13,14 @@ System.config({
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"removeComments": false,
-		"noImplicitlyAny": false,
+		"noImplicitAny": false
 	},
 
 	// Configure default extensions so we can use old-style imports.
 	packages: {
 		app: {
 			defaultExtension: 'ts'
-		},
+		}
 	},
 
 	// Allow us to refer to some packages with short aliases.
@@ -47,7 +47,7 @@ System.config({
 			format: 'global'
 		},
 		'bootstrap': {
-			deps: ['tether', 'jquery'],
+			deps: ['tether', 'jquery']
 		},
 		'underscore': {
 			format: 'global'

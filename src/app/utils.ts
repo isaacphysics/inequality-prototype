@@ -1,7 +1,6 @@
 ///////// UTILS.TS
 
 export function iRange(from: number, to: number, includeLast: boolean = true) {
-    var a = [];
     var j: number = includeLast ? to+1 : to;
     return Array.apply(null, Array(j - from)).map(function(_, i) { return i; });
 }

@@ -3,6 +3,9 @@ declare module p5 {
     export interface instance {
         new (s: (context: context) => void);
         Vector : Vector;
+        resizeCanvas(width: number, height: number);
+        touchX: Vector;
+        touchY: Vector;
     }
 
     export interface context {
@@ -13,6 +16,7 @@ declare module p5 {
         createCanvas(width: number, height: number): void;
         noCursor(): void;
         noStroke(): void;
+        noFill(): void;
 
         loadImage(image: string): Image;
         createVector(x: number, y: number): Vector;
@@ -68,6 +72,10 @@ declare module p5 {
         z: number;
         lerp(x: any, y?: any, z?: any, amt?: any): void;
         dist(v1: Vector, v2: Vector): number;
+        dist(v: Vector): number;
+        add(v1: Vector, v2: Vector): Vector;
+        add(v: Vector): void;
+        mult(n: number);
     }
 }
 

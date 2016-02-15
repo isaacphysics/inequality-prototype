@@ -16,6 +16,7 @@ limitations under the License.
 
 
 ///// <reference path="../../Typings/p5.d.ts" />
+///// <reference path="../../Typings/underscore.d.ts" />
 
 /* tslint:disable: no-unused-variable */
 /* tslint:disable: comment-format */
@@ -31,7 +32,7 @@ import { Symbol } from './symbol.ts'
 export
 class MySketch {
 	symbols: Array<Widget>;
-	movingSymbol = null;
+	movingSymbol: Widget = null;
 	ptouch: p5.Vector = null;
 
 	constructor(private p) {
@@ -53,6 +54,12 @@ class MySketch {
 		b.position.x = a.dockingPoints[1].x + a.position.x;
 		b.position.y = a.dockingPoints[1].y + a.position.y;
 		a.setChild(1, b);
+		var c = new Symbol(this.p, this);
+		c.position.x = b.dockingPoints[1].x + b.position.x;
+		c.position.y = b.dockingPoints[1].y + b.position.y;
+		b.setChild(1, c);
+
+		var tree = a.getSubtree();
 
 		this.ptouch = this.p.createVector(0,0);
 	};
@@ -60,7 +67,7 @@ class MySketch {
 	draw = () => {
 		this.p.background(255);
 		this.symbols.forEach(symbol => {
-			symbol.display();
+			symbol.display(1.0);
 		});
 	};
 
@@ -114,7 +121,7 @@ class MySketch {
 			this.ptouch.y = this.p.touchY;
 			
 			// Check if we are moving close to a docking point, and highlight it even more.
-			this.symbols.some( (symbol, i) => {
+			this.symbols.some( (symbol) => {
 				// FIXME This is truly awful.
 				symbol.highlightDockingPoint = -1;
 				// This is the point where the mouse/touch is.
@@ -126,7 +133,7 @@ class MySketch {
 					var dockingPoints = hitSymbol.dockingPoints;
 					dockingPoints.some( (point, j) => {
 						var dp = p5.Vector.add(point, hitSymbol.position);
-						if(dp.dist(hitPoint) < 10) {
+						if(p5.Vector.dist(dp, hitPoint) < 10) {
 							// If we are, let's highlight it!
 							hitSymbol.highlightDockingPoint = j;
 							return true;
@@ -134,7 +141,7 @@ class MySketch {
 					});
 					return true;
 				}
-			}
+			});
 		}
 	};
 
@@ -148,7 +155,7 @@ class MySketch {
 			var shouldRemoveFromRoots = false;
 		
 			// I don't like having to do this again, but hey...
-			this.symbols.some( (symbol, i) => {
+			this.symbols.some( (symbol) => {
 				// This is the point where the mouse/touch is.
 				var hitPoint = this.p.createVector(this.p.touchX, this.p.touchY);
 				// Let's find a symbol that is close enough for us to be close to its docking points
@@ -158,7 +165,7 @@ class MySketch {
 					var dockingPoints = hitSymbol.dockingPoints;
 					dockingPoints.some( (point, j) => {
 						var dp = p5.Vector.add(point, hitSymbol.position);
-						if(dp.dist(hitPoint) < 10) {
+						if(p5.Vector.dist(dp, hitPoint) < 10) {
 							// Reasonably assuming that the hitSymbol is the one with the dirty highlighter, so let's clear it
 							hitSymbol.highlightDockingPoint = -1;
 							// Actually dock the moving symbol that we just dropped
@@ -173,7 +180,8 @@ class MySketch {
 					});
 					return true;
 				}
-			}
+			});
+
 			// Doing the remove-from-roots thing here to avoid messing up the array of roots.
 			if(shouldRemoveFromRoots) {
 				this.symbols = this.symbols.filter( (e) => {
@@ -190,4 +198,5 @@ class MySketch {
 }
 
 var p = new p5( (p) => new MySketch(p) );
-p.resizeCanvas($('body').width(), $('body').height());
+var docBody = $('body');
+p.resizeCanvas(docBody.width(), docBody.height());

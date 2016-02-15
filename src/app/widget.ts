@@ -12,7 +12,6 @@ class Widget {
 
 	id: number = -1;
 	position: p5.Vector;
-	isMoving: boolean = false;
 
 	dockingPoints: Array<p5.Vector> = [];
 	dockingPointScales: Array<number> = [];
@@ -38,10 +37,10 @@ class Widget {
 			// FIXME 80 is hardcoded (look further down too!)
 			return p.createVector(Math.cos( (n/8) * 2*Math.PI), -Math.sin( (n/8) * 2*Math.PI)).mult(80);
 		});
-		this.dockingPointScales = _.range(0,7).map( n => { return 1.0; });
-		this.dockingPointTypes = _.range(0,7).map( n => { return null; });
+		this.dockingPointScales = _.range(0,7).map(() => { return 1.0; });
+		this.dockingPointTypes = _.range(0,7).map(() => { return null; });
 		this.docksTo = [];
-		this.children = _.range(0,7).map( n => { return null; });
+		this.children = _.range(0,7).map(() => { return null; });
 	}
 
 	display(scale: number) {
@@ -109,7 +108,7 @@ class Widget {
 	}
 	
 	removeChild(child: Widget) {
-		this.children = this.children.map( e: Widget => {
+		this.children = this.children.map( (e: Widget) => {
 			if(e != null && child.id == e.id) {
 				return null;
 			} else {
@@ -155,6 +154,15 @@ class Widget {
 			return this;
 		}
 		return null;
+	}
+
+	getSubtree(): Array<Widget> {
+		var subtree: Array<Widget> = [];
+		//subtree.push(this);
+		//this.children.forEach( c => {
+		//	subtree = subtree.concat(c.getSubtree());
+		//});
+		return subtree;
 	}
 
 	moveBy(d: p5.Vector) {

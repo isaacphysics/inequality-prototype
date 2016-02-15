@@ -8,8 +8,7 @@ class Symbol extends Widget {
 		this.dockingPoints = [0, 1, /*3,*/ 5].map((n) => {
 			// Mind the minus sign.
 			// FIXME 80 is hardcoded
-			var v = p.createVector(Math.cos( (n/6) * 2*Math.PI), -Math.sin( (n/6) * 2*Math.PI)).mult(80);
-			return v;
+			return p.createVector(Math.cos( (n/6) * 2*Math.PI), -Math.sin( (n/6) * 2*Math.PI)).mult(80);
 		});
 		this.dockingPointScales = [1.0, 0.6, /*1.0,*/ 0.6];
 		this.dockingPointTypes = ['operator', 'exponent', /*'operator',*/ 'subscript'];
