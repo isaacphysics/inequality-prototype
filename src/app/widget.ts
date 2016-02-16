@@ -10,6 +10,8 @@ class Widget {
 	private p: any;
 	private radius = 50;
 
+	currentScale = 1.0;
+
 	id: number = -1;
 	position: p5.Vector;
 
@@ -43,7 +45,10 @@ class Widget {
 		this.children = _.range(0,7).map(() => { return null; });
 	}
 
-	display(scale: number) {
+	display(scale: number = 1.0) {
+		// This is probably very bad form
+		this.currentScale = scale;
+
 		var alpha = 255;
 		if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {
 			alpha = 127;
@@ -156,12 +161,27 @@ class Widget {
 		return null;
 	}
 
-	getSubtree(): Array<Widget> {
+	dockingPointsHit(p: p5.Vector): number {
+		// This highlight thing is incredibly fishy, and yet it works...
+		this.highlightDockingPoint = -1;
+		this.dockingPoints.some( (e, i) => {
+			var dp = p5.Vector.add(p5.Vector.mult(e, this.currentScale), this.position);
+			if(p5.Vector.dist(p, dp) < 10) {
+				this.highlightDockingPoint = i;
+				return true;
+			}
+		});
+		return this.highlightDockingPoint;
+	}
+
+	getAllChildren(): Array<Widget> {
 		var subtree: Array<Widget> = [];
-		//subtree.push(this);
-		//this.children.forEach( c => {
-		//	subtree = subtree.concat(c.getSubtree());
-		//});
+		subtree.push(this);
+		this.children.forEach( c => {
+			if(c != null) {
+				subtree = subtree.concat(c.getAllChildren());
+			}
+		});
 		return subtree;
 	}
 

@@ -47,19 +47,17 @@ class MySketch {
 		this.symbols = [];
 		this.p.createCanvas(800, 600);
 		var a = new Symbol(this.p, this);
-		a.position.x = this.p.width/2;
-		a.position.y = this.p.height/2;
+		a.position.x = 100;
+		a.position.y = 100;
 		this.symbols.push(a);
 		var b = new Symbol(this.p, this);
-		b.position.x = a.dockingPoints[1].x + a.position.x;
-		b.position.y = a.dockingPoints[1].y + a.position.y;
-		a.setChild(1, b);
+		b.position.x = 300;
+		b.position.y = 100;
+		this.symbols.push(b);
 		var c = new Symbol(this.p, this);
-		c.position.x = b.dockingPoints[1].x + b.position.x;
-		c.position.y = b.dockingPoints[1].y + b.position.y;
-		b.setChild(1, c);
-
-		var tree = a.getSubtree();
+		c.position.x = 500;
+		c.position.y = 100;
+		this.symbols.push(c);
 
 		this.ptouch = this.p.createVector(0,0);
 	};
@@ -78,6 +76,7 @@ class MySketch {
 		var index = -1;
 		var movingSymbolDocksTo: Array<string> = [];
 		this.symbols.some( (symbol, i) => {
+			// .hit() propagates down the hierarchy
 			var hitSymbol = symbol.hit(this.p.createVector(this.p.touchX, this.p.touchY));
 			if(hitSymbol != null) {
 				// If we hit that symbol, then mark it as moving
@@ -121,7 +120,10 @@ class MySketch {
 			this.ptouch.y = this.p.touchY;
 			
 			// Check if we are moving close to a docking point, and highlight it even more.
-			this.symbols.some( (symbol) => {
+
+			_.flatten(this.symbols.map( (s) => {
+				return s.getAllChildren();
+			})).some( (symbol) => {
 				// FIXME This is truly awful.
 				symbol.highlightDockingPoint = -1;
 				// This is the point where the mouse/touch is.
@@ -129,16 +131,8 @@ class MySketch {
 				// Let's find a symbol that is close enough for us to be close to its docking points
 				var hitSymbol = symbol.externalHit(hitPoint);
 				if(hitSymbol != null && hitSymbol.id != this.movingSymbol.id) {
-					// If we found a viable candidate, let's get its docking points and see if we're over any of them
-					var dockingPoints = hitSymbol.dockingPoints;
-					dockingPoints.some( (point, j) => {
-						var dp = p5.Vector.add(point, hitSymbol.position);
-						if(p5.Vector.dist(dp, hitPoint) < 10) {
-							// If we are, let's highlight it!
-							hitSymbol.highlightDockingPoint = j;
-							return true;
-						}
-					});
+					// If we found a viable candidate, let's see if we hit any of its docking points
+					hitSymbol.dockingPointsHit(hitPoint);
 					return true;
 				}
 			});
@@ -155,37 +149,37 @@ class MySketch {
 			var shouldRemoveFromRoots = false;
 		
 			// I don't like having to do this again, but hey...
-			this.symbols.some( (symbol) => {
+
+			_.flatten(this.symbols.map( (s) => {
+				return s.getAllChildren();
+			})).some( (symbol) => {
 				// This is the point where the mouse/touch is.
 				var hitPoint = this.p.createVector(this.p.touchX, this.p.touchY);
 				// Let's find a symbol that is close enough for us to be close to its docking points
 				var hitSymbol = symbol.externalHit(hitPoint);
 				if(hitSymbol != null && hitSymbol.id != formerlyMovingSymbol.id) {
-					// If we found a viable candidate, let's get its docking points and see if we dropped on top of any of them
-					var dockingPoints = hitSymbol.dockingPoints;
-					dockingPoints.some( (point, j) => {
-						var dp = p5.Vector.add(point, hitSymbol.position);
-						if(p5.Vector.dist(dp, hitPoint) < 10) {
-							// Reasonably assuming that the hitSymbol is the one with the dirty highlighter, so let's clear it
-							hitSymbol.highlightDockingPoint = -1;
-							// Actually dock the moving symbol that we just dropped
-							hitSymbol.setChild(j, formerlyMovingSymbol);
-							// Some animation would be nice here...
-							formerlyMovingSymbol.position = dp;
-							// The symbol we've been moving had been put with the roots, so if we did dock it,
-							// we might also want to remove it from the roots, as it's not a root anymore.
-							shouldRemoveFromRoots = true;
-							return true;
-						}
-					});
-					return true;
+					var index = hitSymbol.dockingPointsHit(hitPoint);
+					if(index > -1) {
+						// Clear highlighted docking points
+						hitSymbol.highlightDockingPoint = -1;
+						// Actually dock the symbol
+						hitSymbol.setChild(index, formerlyMovingSymbol);
+						// and snap it into position
+						var np = p5.Vector.add(hitSymbol.position, hitSymbol.dockingPoints[index]);
+						formerlyMovingSymbol.moveBy(p5.Vector.sub(np, formerlyMovingSymbol.position));
+						// TODO Rearrange children according to scale
+						// Finally, this symbol was among the roots while moving, so if we docked it somewhere,
+						// let's remove it from the roots.
+						shouldRemoveFromRoots = true;
+						return true;
+					}
 				}
 			});
 
 			// Doing the remove-from-roots thing here to avoid messing up the array of roots.
 			if(shouldRemoveFromRoots) {
-				this.symbols = this.symbols.filter( (e) => {
-					return e.id != formerlyMovingSymbol.id;
+				this.symbols = _.reject(this.symbols, (e) => {
+					return e.id == formerlyMovingSymbol.id;
 				});
 			}
 			
