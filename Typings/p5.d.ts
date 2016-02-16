@@ -76,6 +76,7 @@ declare module p5 {
         add(v1: Vector, v2: Vector): Vector;
         add(v: Vector): void;
         mult(n: number);
+        mult(v: Vector, n: number): Vector;
     }
 }
 
