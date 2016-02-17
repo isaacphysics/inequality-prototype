@@ -75,7 +75,7 @@ class Widget {
 		this.children.forEach( (child, index) => {
 			if(child != null) {
 				// There is a child, so let's just draw it...
-				child.display(this.dockingPointScales[index]);
+				child.display(this.currentScale * this.dockingPointScales[index]);
 			}
 		});
 
@@ -103,8 +103,14 @@ class Widget {
 	}
 	
 	setChild(dockingPointIndex: number, child: Widget) {
+		// Add the child to this symbol,
 		this.children[dockingPointIndex] = child;
+		// set the child's parent to this symbol,
 		child.parentWidget = this;
+		// and snap the child into position.
+		var np = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[dockingPointIndex], this.currentScale));
+		child.moveBy(p5.Vector.sub(np, child.position));
+		// Well done!
 	}
 	
 	removeFromParent() {
@@ -155,7 +161,7 @@ class Widget {
 			return w;
 		}
 		// FIXME 80 is hardcoded
-		if(p5.Vector.dist(p, this.position) < (this.radius + 80/2)) {
+		if(p5.Vector.dist(p, this.position) < this.currentScale*(this.radius + 80/2)) {
 			return this;
 		}
 		return null;
