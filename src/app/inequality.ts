@@ -52,12 +52,16 @@ class MySketch {
 		this.symbols.push(a);
 		var b = new Symbol(this.p, this);
 		b.position.x = 300;
-		b.position.y = 100;
+		b.position.y = 200;
 		this.symbols.push(b);
 		var c = new Symbol(this.p, this);
 		c.position.x = 500;
 		c.position.y = 100;
 		this.symbols.push(c);
+		var d = new Symbol(this.p, this);
+		d.position.x = 700;
+		d.position.y = 300;
+		this.symbols.push(d);
 
 		this.ptouch = this.p.createVector(0,0);
 	};
@@ -65,7 +69,7 @@ class MySketch {
 	draw = () => {
 		this.p.background(255);
 		this.symbols.forEach(symbol => {
-			symbol.display(1.0);
+			symbol.display();
 		});
 	};
 
@@ -87,6 +91,7 @@ class MySketch {
 				// Remove symbol from the hierarchy, place it back with the roots.
 				if(hitSymbol.parentWidget != null) {
 					this.symbols.push(hitSymbol);
+					hitSymbol.scale = 1.0;
 					hitSymbol.removeFromParent();
 				}
 				
@@ -106,7 +111,7 @@ class MySketch {
 			index = -1;
 		}
 		
-		// TODO Tell the other symbols to show only these points. Achievement unlocked: Usability!
+		// Tell the other symbols to show only these points. Achievement unlocked: Usability!
 		this.symbols.forEach( (symbol) => {
 			symbol.setDockingPointsToDraw(movingSymbolDocksTo);
 		});

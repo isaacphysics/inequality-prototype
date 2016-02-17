@@ -7,10 +7,10 @@ export var wId = 0;
 
 export
 class Widget {
-	private p: any;
-	private radius = 50;
+	protected p: any;
+	protected radius = 50;
 
-	currentScale = 1.0;
+	scale: number = 1.0;
 
 	id: number = -1;
 	position: p5.Vector;
@@ -45,10 +45,7 @@ class Widget {
 		this.children = _.range(0,7).map(() => { return null; });
 	}
 
-	display(scale: number = 1.0) {
-		// This is probably very bad form
-		this.currentScale = scale;
-
+	display() {
 		var alpha = 255;
 		if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {
 			alpha = 127;
@@ -67,21 +64,21 @@ class Widget {
 					} else {
 						this.p.noFill();
 					}
-					this.p.ellipse(this.position.x + scale*point.x, this.position.y + scale*point.y, scale*20, scale*20);
+					this.p.ellipse(this.position.x + this.scale * point.x, this.position.y + this.scale * point.y, this.scale * 20, this.scale * 20);
 				}
 			}
 		});
 		// Curses, you painter's algorithm!
-		this.children.forEach( (child, index) => {
+		this.children.forEach( child => {
 			if(child != null) {
 				// There is a child, so let's just draw it...
-				child.display(this.currentScale * this.dockingPointScales[index]);
+				child.display();
 			}
 		});
 
 		this.p.stroke(0, 63, 127, alpha);
 		this.p.fill(255, 255, 255, alpha);
-		this.p.ellipse(this.position.x, this.position.y, scale*2*this.radius, scale*2*this.radius);
+		this.p.ellipse(this.position.x, this.position.y, this.scale * 2 * this.radius, this.scale * 2 * this.radius);
 	}
 	
 	setDockingPointsToDraw(points: Array<string>) {
@@ -107,9 +104,11 @@ class Widget {
 		this.children[dockingPointIndex] = child;
 		// set the child's parent to this symbol,
 		child.parentWidget = this;
-		// and snap the child into position.
-		var np = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[dockingPointIndex], this.currentScale));
+		// snap the child into position,
+		var np = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[dockingPointIndex], this.scale));
 		child.moveBy(p5.Vector.sub(np, child.position));
+		// and scale it appropriately.
+		child.scale = this.scale * this.dockingPointScales[dockingPointIndex];
 		// Well done!
 	}
 	
@@ -141,7 +140,7 @@ class Widget {
 		if(w != null) {
 			return w;
 		}
-		if(p5.Vector.dist(p, this.position) < this.radius) {
+		if(p5.Vector.dist(p, this.position) < this.scale * this.radius) {
 			return this;
 		}
 		return null;
@@ -161,7 +160,7 @@ class Widget {
 			return w;
 		}
 		// FIXME 80 is hardcoded
-		if(p5.Vector.dist(p, this.position) < this.currentScale*(this.radius + 80/2)) {
+		if(p5.Vector.dist(p, this.position) < this.scale*(this.radius + 80/2)) {
 			return this;
 		}
 		return null;
@@ -171,7 +170,7 @@ class Widget {
 		// This highlight thing is incredibly fishy, and yet it works...
 		this.highlightDockingPoint = -1;
 		this.dockingPoints.some( (e, i) => {
-			var dp = p5.Vector.add(p5.Vector.mult(e, this.currentScale), this.position);
+			var dp = p5.Vector.add(p5.Vector.mult(e, this.scale), this.position);
 			if(p5.Vector.dist(p, dp) < 10) {
 				this.highlightDockingPoint = i;
 				return true;

@@ -16,7 +16,15 @@ class Symbol extends Widget {
 		this.children = [null, null, /*null,*/ null];
 	}
 
-	display(scale: number = 1.0) {
-		super.display(scale);
+	display() {
+		super.display();
+
+		this.p.fill(0).strokeWeight(0);
+		this.p.textFont("Georgia")
+			.textStyle(this.p.ITALIC)
+			.textSize(120 * this.scale)
+			.textAlign(this.p.CENTER, this.p.CENTER)
+			.text("e", this.position.x, this.position.y);
+		this.p.strokeWeight(1);
 	}
 }
