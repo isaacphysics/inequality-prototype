@@ -48,6 +48,7 @@ declare module p5 {
         stroke(color: string[]);
         stroke(red: number, green: number, blue: number, opacity?: number);
         stroke(red: string[], green: string[], blue: string[], opacity?: number);
+        strokeWeight(weight: number);
 
 
         //Noise
@@ -55,6 +56,14 @@ declare module p5 {
 
         //Time & Date
         millis(): number;
+
+        //Text
+        text(str: string, x: number, y: number, x2?: number, y2?: number);
+        textFont(f: Object);
+        textFont(f: string);
+        textStyle(theStyle: number);
+        textSize(size: number);
+
     }
 
     export interface Image {
@@ -71,12 +80,10 @@ declare module p5 {
         y: number;
         z: number;
         lerp(x: any, y?: any, z?: any, amt?: any): void;
-        dist(v1: Vector, v2: Vector): number;
-        dist(v: Vector): number;
-        add(v1: Vector, v2: Vector): Vector;
-        add(v: Vector): void;
-        mult(n: number);
+        dist(v1: Vector, v2?: Vector): number;
+        add(v1: Vector, v2?: Vector): Vector;
         mult(v: Vector, n: number): Vector;
+        mult(n: number);
     }
 }
 
