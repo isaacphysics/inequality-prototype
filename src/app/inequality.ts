@@ -125,9 +125,9 @@ class MySketch {
 			this.ptouch.y = this.p.touchY;
 			
 			// Check if we are moving close to a docking point, and highlight it even more.
-			_.flatten(this.symbols.map( (s) => {
+			_.flatten(this.symbols.map( (s: Widget) => {
 				return s.getAllChildren();
-			})).some( (symbol) => {
+			})).some( (symbol: Widget) => {
 				// FIXME This is truly awful.
 				symbol.highlightDockingPoint = -1;
 				// This is the point where the mouse/touch is.
