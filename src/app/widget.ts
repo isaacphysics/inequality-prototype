@@ -4,6 +4,20 @@ import { iRange, saneRound } from './utils.ts'
 // This may very well be a relic of my C++ multi-threaded past, but it served me well so far...
 export var wId = 0;
 
+export
+class Rect {
+	x: number;
+	y: number;
+	w: number;
+	h: number;
+
+	constructor(x: number, y: number, w: number, h: number) {
+		this.x = x;
+		this.y = y;
+		this.w = w;
+		this.h = h;
+	}
+}
 
 export
 class Widget {
@@ -79,6 +93,13 @@ class Widget {
 		this.p.stroke(0, 63, 127, alpha);
 		this.p.fill(255, 255, 255, alpha);
 		this.p.ellipse(this.position.x, this.position.y, this.scale * 2 * this.radius, this.scale * 2 * this.radius);
+
+		var box = this.boundingBox();
+		var bigBox = this.subtreeBoundingBox();
+
+		this.p.noFill();
+		this.p.stroke(255, 127, 0, 255);
+		this.p.rect(bigBox.x, bigBox.y, bigBox.w, bigBox.h);
 	}
 	
 	setDockingPointsToDraw(points: Array<string>) {
@@ -99,16 +120,16 @@ class Widget {
 		this.dockingPointsToDraw = [];
 	}
 	
-	setChild(dockingPointIndex: number, child: Widget) {
+	setChild(index: number, child: Widget) {
 		// Add the child to this symbol,
-		this.children[dockingPointIndex] = child;
+		this.children[index] = child;
 		// set the child's parent to this symbol,
 		child.parentWidget = this;
 		// snap the child into position,
-		var np = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[dockingPointIndex], this.scale));
+		var np = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[index], this.scale));
 		child.moveBy(p5.Vector.sub(np, child.position));
 		// and scale it appropriately.
-		child.scale = this.scale * this.dockingPointScales[dockingPointIndex];
+		child.scale = this.scale * this.dockingPointScales[index];
 		// Well done!
 	}
 	
@@ -197,5 +218,22 @@ class Widget {
 				child.moveBy(d);
 			}
 		});
+	}
+
+	boundingBox(): Rect {
+		// These numbers are hardcoded, but I suppose that's OK for now...
+		return new Rect(this.position.x-this.scale*50, this.position.y-this.scale*50, this.scale * 100, this.scale * 100);
+	}
+
+	subtreeBoundingBox(): Rect {
+		var allChildren: Array<Rect> = _.map(_.flatten(this.getAllChildren()), (c) => { return c.boundingBox() });
+		var box = allChildren.shift();
+		_.each(allChildren, (c) => {
+			if(box.x > c.x) { box.x -= c.w; }
+			if(box.y > c.y) { box.y -= c.w; }
+			if(c.x + c.w > box.x + box.w) { box.w = c.x-box.x + c.w; }
+			if(c.y + c.h > box.y + box.h) { box.h = c.y-box.y + c.h; }
+		});
+		return box;
 	}
 }
