@@ -64,7 +64,7 @@ class Widget {
 		if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {
 			alpha = 127;
 		}
-		
+
 		// This has to be done twice
 		this.children.forEach( (child, index) => {
 			if(child == null) {
@@ -101,7 +101,7 @@ class Widget {
 		this.p.stroke(255, 127, 0, 255);
 		this.p.rect(bigBox.x, bigBox.y, bigBox.w, bigBox.h);
 	}
-	
+
 	setDockingPointsToDraw(points: Array<string>) {
 		this.children.forEach( child => {
 			if(child != null) {
@@ -110,7 +110,7 @@ class Widget {
 		});
 		this.dockingPointsToDraw = points;
 	}
-	
+
 	clearDockingPointsToDraw() {
 		this.children.forEach( child => {
 			if(child != null) {
@@ -119,7 +119,7 @@ class Widget {
 		});
 		this.dockingPointsToDraw = [];
 	}
-	
+
 	setChild(index: number, child: Widget) {
 		// Add the child to this symbol,
 		this.children[index] = child;
@@ -132,12 +132,12 @@ class Widget {
 		child.scale = this.scale * this.dockingPointScales[index];
 		// Well done!
 	}
-	
+
 	removeFromParent() {
 		this.parentWidget.removeChild(this);
 		this.parentWidget = null;
 	}
-	
+
 	removeChild(child: Widget) {
 		this.children = this.children.map( (e: Widget) => {
 			if(e != null && child.id == e.id) {
@@ -166,7 +166,7 @@ class Widget {
 		}
 		return null;
 	}
-	
+
 	externalHit(p: p5.Vector): Widget {
 		var w = null;
 		this.children.some( child => {
@@ -229,8 +229,8 @@ class Widget {
 		var allChildren: Array<Rect> = _.map(_.flatten(this.getAllChildren()), (c) => { return c.boundingBox() });
 		var box = allChildren.shift();
 		_.each(allChildren, (c) => {
-			if(box.x > c.x) { box.x -= c.w; }
-			if(box.y > c.y) { box.y -= c.w; }
+			if(box.x > c.x) { box.w += box.x-c.x; box.x = c.x; }
+			if(box.y > c.y) { box.h += box.y-c.y; box.y = c.y; }
 			if(c.x + c.w > box.x + box.w) { box.w = c.x-box.x + c.w; }
 			if(c.y + c.h > box.y + box.h) { box.h = c.y-box.y + c.h; }
 		});
