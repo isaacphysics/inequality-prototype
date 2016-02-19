@@ -228,12 +228,13 @@ class Widget {
 	subtreeBoundingBox(): Rect {
 		var allChildren: Array<Rect> = _.map(_.flatten(this.getAllChildren()), (c) => { return c.boundingBox() });
 		var box = allChildren.shift();
+		var left = box.x, right = box.x+box.w, top = box.y, bottom = box.y+box.h;
 		_.each(allChildren, (c) => {
-			if(box.x > c.x) { box.w += box.x-c.x; box.x = c.x; }
-			if(box.y > c.y) { box.h += box.y-c.y; box.y = c.y; }
-			if(c.x + c.w > box.x + box.w) { box.w = c.x-box.x + c.w; }
-			if(c.y + c.h > box.y + box.h) { box.h = c.y-box.y + c.h; }
+			if(left > c.x) { left = c.x; }
+			if(top > c.y) { top = c.y; }
+			if(right < c.x + c.w) { right = c.x + c.w; }
+			if(bottom < c.y + c.h) { bottom = c.y + c.h; }
 		});
-		return box;
+		return new Rect(left, top, right-left, bottom-top);
 	}
 }

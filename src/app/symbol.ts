@@ -24,7 +24,7 @@ class Symbol extends Widget {
 			.textStyle(this.p.ITALIC)
 			.textSize(120 * this.scale)
 			.textAlign(this.p.CENTER, this.p.CENTER)
-			.text("e", this.position.x, this.position.y);
+			.text("H", this.position.x, this.position.y);
 		this.p.strokeWeight(1);
 	}
 }

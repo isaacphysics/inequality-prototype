@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+      "compileOnSave": false,
     "sourceMap": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,

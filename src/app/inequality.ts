@@ -94,7 +94,7 @@ class MySketch {
 					hitSymbol.scale = 1.0;
 					hitSymbol.removeFromParent();
 				}
-				
+
 				// Get the points it docks to, we'll use them later
 				movingSymbolDocksTo = this.movingSymbol.docksTo;
 
@@ -102,7 +102,7 @@ class MySketch {
 				return true;
 			}
 		});
-        
+
 		// Put the moving symbol on top (bottom?) of the list (this only works with roots,
 		// and may not be necessary at all, but eye candy, right?)
 		if(index > -1) {
@@ -110,7 +110,7 @@ class MySketch {
 			this.symbols.push(e);
 			index = -1;
 		}
-		
+
 		// Tell the other symbols to show only these points. Achievement unlocked: Usability!
 		this.symbols.forEach( (symbol) => {
 			symbol.setDockingPointsToDraw(movingSymbolDocksTo);
@@ -123,7 +123,7 @@ class MySketch {
 			this.movingSymbol.moveBy(d);
 			this.ptouch.x = this.p.touchX;
 			this.ptouch.y = this.p.touchY;
-			
+
 			// Check if we are moving close to a docking point, and highlight it even more.
 			_.flatten(this.symbols.map( (s: Widget) => {
 				return s.getAllChildren();
@@ -149,9 +149,9 @@ class MySketch {
 			var formerlyMovingSymbol = this.movingSymbol;
 			this.movingSymbol = null;
 			this.ptouch = null;
-		
+
 			var shouldRemoveFromRoots = false;
-		
+
 			// I don't like having to do this again, but hey...
 
 			_.flatten(this.symbols.map( (s) => {
@@ -183,7 +183,7 @@ class MySketch {
 					return e.id == formerlyMovingSymbol.id;
 				});
 			}
-			
+
 			// Reset rendering of docking points
 			this.symbols.forEach( (symbol) => {
 				symbol.clearDockingPointsToDraw();
