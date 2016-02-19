@@ -1,5 +1,3 @@
-import { iRange, saneRound } from './utils.ts'
-
 // This is meant to be a static global thingie for uniquely identifying widgets/symbols
 // This may very well be a relic of my C++ multi-threaded past, but it served me well so far...
 export var wId = 0;
@@ -59,14 +57,14 @@ class Widget {
 		this.children = _.range(0,7).map(() => { return null; });
 	}
 
-	display() {
+	draw() {
 		var alpha = 255;
 		if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {
 			alpha = 127;
 		}
 
 		// This has to be done twice
-		this.children.forEach( (child, index) => {
+		_.each(this.children, (child, index) => {
 			if(child == null) {
 				// There is no child to paint, let's paint an empty docking point
 				var type = this.dockingPointTypes[index];
@@ -83,22 +81,21 @@ class Widget {
 			}
 		});
 		// Curses, you painter's algorithm!
-		this.children.forEach( child => {
+		_.each(this.children, child => {
 			if(child != null) {
 				// There is a child, so let's just draw it...
-				child.display();
+				child.draw();
 			}
 		});
 
-		this.p.stroke(0, 63, 127, alpha);
-		this.p.fill(255, 255, 255, alpha);
-		this.p.ellipse(this.position.x, this.position.y, this.scale * 2 * this.radius, this.scale * 2 * this.radius);
+		//this.p.stroke(63, 127, 192, alpha);
+		//this.p.fill(255, 255, 255, alpha);
+		//this.p.ellipse(this.position.x, this.position.y, this.scale * 2 * this.radius, this.scale * 2 * this.radius);
 
-		var box = this.boundingBox();
 		var bigBox = this.subtreeBoundingBox();
 
-		this.p.noFill();
-		this.p.stroke(255, 127, 0, 255);
+		this.p.fill(127, 192, 255, 15);
+		this.p.stroke(255, 0, 127, 63);
 		this.p.rect(bigBox.x, bigBox.y, bigBox.w, bigBox.h);
 	}
 
@@ -208,7 +205,7 @@ class Widget {
 				subtree = subtree.concat(c.getAllChildren());
 			}
 		});
-		return subtree;
+		return _.flatten(subtree);
 	}
 
 	moveBy(d: p5.Vector) {
@@ -226,10 +223,9 @@ class Widget {
 	}
 
 	subtreeBoundingBox(): Rect {
-		var allChildren: Array<Rect> = _.map(_.flatten(this.getAllChildren()), (c) => { return c.boundingBox() });
-		var box = allChildren.shift();
-		var left = box.x, right = box.x+box.w, top = box.y, bottom = box.y+box.h;
-		_.each(allChildren, (c) => {
+		var [box, ...subtree] = _.map(this.getAllChildren(), (c) => { return c.boundingBox() });
+		var left = box.x, right = box.x + box.w, top = box.y, bottom = box.y + box.h;
+		_.each(subtree, (c) => {
 			if(left > c.x) { left = c.x; }
 			if(top > c.y) { top = c.y; }
 			if(right < c.x + c.w) { right = c.x + c.w; }

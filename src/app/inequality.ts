@@ -21,7 +21,6 @@ limitations under the License.
 /* tslint:disable: no-unused-variable */
 /* tslint:disable: comment-format */
 
-import { iRange, saneRound } from './utils.ts'
 import { Widget } from './widget.ts'
 import { Symbol } from './symbol.ts'
 
@@ -33,7 +32,7 @@ export
 class MySketch {
 	symbols: Array<Widget>;
 	movingSymbol: Widget = null;
-	ptouch: p5.Vector = null;
+	prevTouch: p5.Vector = null;
 
 	constructor(private p) {
 		this.p.setup = this.setup;
@@ -46,30 +45,20 @@ class MySketch {
 	setup = () => {
 		this.symbols = [];
 		this.p.createCanvas(800, 600);
-		var a = new Symbol(this.p, this);
-		a.position.x = 100;
-		a.position.y = 100;
-		this.symbols.push(a);
-		var b = new Symbol(this.p, this);
-		b.position.x = 300;
-		b.position.y = 200;
-		this.symbols.push(b);
-		var c = new Symbol(this.p, this);
-		c.position.x = 500;
-		c.position.y = 100;
-		this.symbols.push(c);
-		var d = new Symbol(this.p, this);
-		d.position.x = 700;
-		d.position.y = 300;
-		this.symbols.push(d);
 
-		this.ptouch = this.p.createVector(0,0);
+		this.symbols = _.map([[100, 100], [300, 200], [500, 150], [700, 250]], (p) => {
+			var s = new Symbol(this.p, this);
+			s.position = this.p.createVector(p[0], p[1]);
+			return s;
+		});
+
+		this.prevTouch = this.p.createVector(0,0);
 	};
 
 	draw = () => {
 		this.p.background(255);
-		this.symbols.forEach(symbol => {
-			symbol.display();
+		_.each(this.symbols, symbol => {
+			symbol.draw();
 		});
 	};
 
@@ -79,14 +68,14 @@ class MySketch {
 		this.movingSymbol = null;
 		var index = -1;
 		var movingSymbolDocksTo: Array<string> = [];
-		this.symbols.some( (symbol, i) => {
+		_.some(this.symbols, (symbol, i) => {
 			// .hit() propagates down the hierarchy
 			var hitSymbol = symbol.hit(this.p.createVector(this.p.touchX, this.p.touchY));
 			if(hitSymbol != null) {
 				// If we hit that symbol, then mark it as moving
 				this.movingSymbol = hitSymbol;
 				index = i;
-				this.ptouch = this.p.createVector(this.p.touchX, this.p.touchY);
+				this.prevTouch = this.p.createVector(this.p.touchX, this.p.touchY);
 
 				// Remove symbol from the hierarchy, place it back with the roots.
 				if(hitSymbol.parentWidget != null) {
@@ -112,22 +101,22 @@ class MySketch {
 		}
 
 		// Tell the other symbols to show only these points. Achievement unlocked: Usability!
-		this.symbols.forEach( (symbol) => {
+		_.each(this.symbols, symbol => {
 			symbol.setDockingPointsToDraw(movingSymbolDocksTo);
 		});
 	};
 
 	touchMoved = () => {
 		if(this.movingSymbol != null) {
-			var d = this.p.createVector(this.p.touchX - this.ptouch.x, this.p.touchY - this.ptouch.y);
+			var d = this.p.createVector(this.p.touchX - this.prevTouch.x, this.p.touchY - this.prevTouch.y);
 			this.movingSymbol.moveBy(d);
-			this.ptouch.x = this.p.touchX;
-			this.ptouch.y = this.p.touchY;
+			this.prevTouch.x = this.p.touchX;
+			this.prevTouch.y = this.p.touchY;
 
 			// Check if we are moving close to a docking point, and highlight it even more.
-			_.flatten(this.symbols.map( (s: Widget) => {
-				return s.getAllChildren();
-			})).some( (symbol: Widget) => {
+			_.flatten(_.map(this.symbols, symbol => {
+				return symbol.getAllChildren();
+			})).some( symbol => {
 				// FIXME This is truly awful.
 				symbol.highlightDockingPoint = -1;
 				// This is the point where the mouse/touch is.
@@ -148,15 +137,15 @@ class MySketch {
 			// When touches end, unmark the symbol as moving.
 			var formerlyMovingSymbol = this.movingSymbol;
 			this.movingSymbol = null;
-			this.ptouch = null;
+			this.prevTouch = null;
 
 			var shouldRemoveFromRoots = false;
 
 			// I don't like having to do this again, but hey...
 
-			_.flatten(this.symbols.map( (s) => {
-				return s.getAllChildren();
-			})).some( (symbol) => {
+			_.flatten(_.map(this.symbols, symbol => {
+				return symbol.getAllChildren();
+			})).some( symbol => {
 				// This is the point where the mouse/touch is.
 				var hitPoint = this.p.createVector(this.p.touchX, this.p.touchY);
 				// Let's find a symbol that is close enough for us to be close to its docking points
@@ -185,7 +174,7 @@ class MySketch {
 			}
 
 			// Reset rendering of docking points
-			this.symbols.forEach( (symbol) => {
+			_.each(this.symbols, symbol => {
 				symbol.clearDockingPointsToDraw();
 			});
 		}
