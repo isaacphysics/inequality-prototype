@@ -1,4 +1,4 @@
-import { Widget } from './widget.ts'
+import { Widget, Rect } from './widget.ts'
 
 export
 class Symbol extends Widget {

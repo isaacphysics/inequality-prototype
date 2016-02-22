@@ -182,5 +182,3 @@ class MySketch {
 }
 
 var p = new p5( (p) => new MySketch(p) );
-var docBody = $('body');
-p.resizeCanvas(docBody.width(), docBody.height());
