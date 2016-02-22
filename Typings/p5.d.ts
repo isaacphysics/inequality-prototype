@@ -10,6 +10,7 @@ declare module p5 {
 
     export interface context {
 
+        preload(): any;
         setup(): any;
         draw(): any;
 
@@ -63,7 +64,7 @@ declare module p5 {
         textFont(f: string);
         textStyle(theStyle: number);
         textSize(size: number);
-
+        loadFont(path: string, callback?: () => void);
     }
 
     export interface Image {
@@ -84,6 +85,11 @@ declare module p5 {
         add(v1: Vector, v2?: Vector): Vector;
         mult(v: Vector, n: number): Vector;
         mult(n: number);
+    }
+
+    export interface Font {
+        font: any;
+        textBounds(line: string, x: number, y: number, fontSize?: number, options?: Object);
     }
 }
 
