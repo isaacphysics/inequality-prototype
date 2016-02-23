@@ -34,7 +34,10 @@ class MySketch {
 	movingSymbol: Widget = null;
 	prevTouch: p5.Vector = null;
 
+	font: p5.Font = null;
+
 	constructor(private p) {
+		this.p.preload = this.preload;
 		this.p.setup = this.setup;
 		this.p.draw = this.draw;
 		this.p.touchStarted = this.touchStarted;
@@ -42,12 +45,16 @@ class MySketch {
 		this.p.touchEnded = this.touchEnded;
 	}
 
+	preload = () => {
+		this.font = this.p.loadFont("/assets/STIXGeneralItalic.otf");
+	};
+
 	setup = () => {
 		this.symbols = [];
 		this.p.createCanvas(800, 600);
 
-		this.symbols = _.map([[100, 100], [300, 200], [500, 150], [700, 250]], (p) => {
-			var s = new Symbol(this.p, this);
+		this.symbols = _.map([[100, 100, "M"], [300, 200, "x"], [500, 150, "i"], [700, 250, "j"]], (p) => {
+			var s = new Symbol(this.p, this, p[2]);
 			s.position = this.p.createVector(p[0], p[1]);
 			return s;
 		});
@@ -182,5 +189,3 @@ class MySketch {
 }
 
 var p = new p5( (p) => new MySketch(p) );
-var docBody = $('body');
-p.resizeCanvas(docBody.width(), docBody.height());

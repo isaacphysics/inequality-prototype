@@ -10,6 +10,7 @@ declare module p5 {
 
     export interface context {
 
+        preload(): any;
         setup(): any;
         draw(): any;
 
