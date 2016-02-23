@@ -15,6 +15,10 @@ class Rect {
 		this.w = w;
 		this.h = h;
 	}
+
+	contains(p: p5.Vector): boolean {
+		return (p.x >= this.x) && (p.y >= this.y) && (p.x <= this.x+this.w) && (p.y <= this.y+this.h);
+	}
 }
 
 export
@@ -69,7 +73,7 @@ class Widget {
 				// There is no child to paint, let's paint an empty docking point
 				var type = this.dockingPointTypes[index];
 				var point = this.dockingPoints[index];
-				if(this.dockingPointsToDraw.indexOf(type) > -1) {
+				if(this.dockingPointsToDraw.indexOf(type) > -1 || window.location.hash === "#debug") {
 					this.p.stroke(0, 127, 255, alpha * 0.5);
 					if(index == this.highlightDockingPoint) {
 						this.p.fill(127, 192, 255);
@@ -92,11 +96,18 @@ class Widget {
 		//this.p.fill(255, 255, 255, alpha);
 		//this.p.ellipse(this.position.x, this.position.y, this.scale * 2 * this.radius, this.scale * 2 * this.radius);
 
-		var bigBox = this.subtreeBoundingBox();
+		if(window.location.hash === "#debug") {
+			var bigBox = this.subtreeBoundingBox();
 
-		this.p.fill(127, 192, 255, 15);
-		this.p.stroke(255, 0, 127, 63);
-		this.p.rect(bigBox.x, bigBox.y, bigBox.w, bigBox.h);
+			this.p.fill(127, 192, 255, 15);
+			this.p.stroke(255, 0, 127, 63);
+			this.p.rect(bigBox.x, bigBox.y, bigBox.w, bigBox.h);
+
+			var weirdBox = this.dockingBoundingBox();
+			this.p.fill(127, 255, 192, 15);
+			this.p.stroke(127, 255, 0, 63);
+			this.p.rect(weirdBox.x, weirdBox.y, weirdBox.w, weirdBox.h);
+		}
 	}
 
 	setDockingPointsToDraw(points: Array<string>) {
@@ -158,7 +169,7 @@ class Widget {
 		if(w != null) {
 			return w;
 		}
-		if(p5.Vector.dist(p, this.position) < this.scale * this.radius) {
+		if(this.boundingBox().contains(p)) {
 			return this;
 		}
 		return null;
@@ -166,19 +177,18 @@ class Widget {
 
 	externalHit(p: p5.Vector): Widget {
 		var w = null;
-		this.children.some( child => {
+		_.each(this.children, child => {
 			if(child != null) {
-				w = child.hit(p);
-				if(w != null) {
-					return true;
-				}
+				w = child.externalHit(p);
+				//if(w != null) {
+				//	return true;
+				//}
 			}
 		});
 		if(w != null) {
 			return w;
 		}
-		// FIXME 80 is hardcoded
-		if(p5.Vector.dist(p, this.position) < this.scale*(this.radius + 80/2)) {
+		if(this.dockingBoundingBox().contains(p)) {
 			return this;
 		}
 		return null;
@@ -220,6 +230,18 @@ class Widget {
 	boundingBox(): Rect {
 		// These numbers are hardcoded, but I suppose that's OK for now...
 		return new Rect(this.position.x-this.scale*50, this.position.y-this.scale*50, this.scale * 100, this.scale * 100);
+	}
+
+	dockingBoundingBox(): Rect {
+		var box = this.boundingBox();
+		var left = box.x, right = box.x + box.w, top = box.y, bottom = box.y + box.h;
+		_.each(this.dockingPoints, (point) => {
+			if(left > this.position.x + point.x - 10*this.scale) { left = this.position.x + this.scale*(point.x - 10); }
+			if(top > this.position.y + point.y - 10*this.scale) { top = this.position.y + this.scale*(point.y - 10); }
+			if(right < this.position.x + point.x) { right = this.position.x + this.scale*(point.x + 10); }
+			if(bottom < this.position.y + point.y) { bottom = this.position.y + this.scale*(point.y + 10); }
+		});
+		return new Rect(left, top, right-left, bottom-top);
 	}
 
 	subtreeBoundingBox(): Rect {

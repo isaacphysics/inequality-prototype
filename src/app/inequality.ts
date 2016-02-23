@@ -123,7 +123,7 @@ class MySketch {
 			// Check if we are moving close to a docking point, and highlight it even more.
 			_.flatten(_.map(this.symbols, symbol => {
 				return symbol.getAllChildren();
-			})).some( symbol => {
+			})).forEach( symbol => {
 				// FIXME This is truly awful.
 				symbol.highlightDockingPoint = -1;
 				// This is the point where the mouse/touch is.
@@ -133,7 +133,8 @@ class MySketch {
 				if(hitSymbol != null && hitSymbol.id != this.movingSymbol.id) {
 					// If we found a viable candidate, let's see if we hit any of its docking points
 					hitSymbol.dockingPointsHit(touchPoint);
-					return true;
+					//console.log(hitSymbol);
+					//return true;
 				}
 			});
 		}
