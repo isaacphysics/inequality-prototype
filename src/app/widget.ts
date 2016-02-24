@@ -24,7 +24,6 @@ class Rect {
 export
 class Widget {
 	protected p: any;
-	protected radius = 50;
 
 	scale: number = 1.0;
 
@@ -92,10 +91,6 @@ class Widget {
 			}
 		});
 
-		//this.p.stroke(63, 127, 192, alpha);
-		//this.p.fill(255, 255, 255, alpha);
-		//this.p.ellipse(this.position.x, this.position.y, this.scale * 2 * this.radius, this.scale * 2 * this.radius);
-
 		if(window.location.hash === "#debug") {
 			var bigBox = this.subtreeBoundingBox();
 
@@ -158,12 +153,12 @@ class Widget {
 
 	hit(p: p5.Vector): Widget {
 		var w = null;
-		this.children.some( child => {
+		_.each(this.children, child => {
 			if(child != null) {
 				w = child.hit(p);
-				if(w != null) {
-					return true;
-				}
+				//if(w != null) {
+				//	return true;
+				//}
 			}
 		});
 		if(w != null) {
@@ -227,19 +222,21 @@ class Widget {
 		});
 	}
 
+	// The BLUE one with the PURPLE-ish border
 	boundingBox(): Rect {
 		// These numbers are hardcoded, but I suppose that's OK for now...
 		return new Rect(this.position.x-this.scale*50, this.position.y-this.scale*50, this.scale * 100, this.scale * 100);
 	}
 
+	// The GREEN one
 	dockingBoundingBox(): Rect {
 		var box = this.boundingBox();
 		var left = box.x, right = box.x + box.w, top = box.y, bottom = box.y + box.h;
 		_.each(this.dockingPoints, (point) => {
 			if(left > this.position.x + point.x - 10*this.scale) { left = this.position.x + this.scale*(point.x - 10); }
 			if(top > this.position.y + point.y - 10*this.scale) { top = this.position.y + this.scale*(point.y - 10); }
-			if(right < this.position.x + point.x) { right = this.position.x + this.scale*(point.x + 10); }
-			if(bottom < this.position.y + point.y) { bottom = this.position.y + this.scale*(point.y + 10); }
+			if(right < this.position.x + this.scale*(point.x - 10)) { right = this.position.x + this.scale*(point.x + 10); }
+			if(bottom < this.position.y + this.scale*(point.y - 10)) { bottom = this.position.y + this.scale*(point.y + 10); }
 		});
 		return new Rect(left, top, right-left, bottom-top);
 	}

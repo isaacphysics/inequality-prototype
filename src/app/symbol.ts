@@ -9,15 +9,12 @@ class Symbol extends Widget {
 		super(p, s);
 		this.letter = letter;
 
-		// WHY THE OFFSET?!
-		var offset = 100;
-		var box = s.font.textBounds(letter, offset, offset, this.scale * 120);
-		this.bounds = new Rect( box.x-(offset + box.w/2), box.y-(offset - box.h/2), box.w, box.h);
+		var box = this.boundingBox();
 
 		this.dockingPoints = [
-			p.createVector(box.w*0.75, 0),
-			p.createVector(box.w - 20, -box.h/2 - 20),
-			p.createVector(box.w - 20,  box.h/2 + 20)
+			p.createVector(box.w, -box.h/2),
+			p.createVector(box.w * 3/4, -box.h * 5/4),
+			p.createVector(box.w * 3/4,  box.h * 1/4)
 		];
 		this.dockingPointScales = [1.0, 0.6, 0.6];
 		this.dockingPointTypes = ['operator', 'exponent', 'subscript'];
@@ -34,7 +31,7 @@ class Symbol extends Widget {
 	draw() {
 		super.draw();
 
-		this.p.fill(0).strokeWeight(0);
+		this.p.fill(0).strokeWeight(0).noStroke();
 
 		this.p.textFont(this.s.font)
 			.textSize(120 * this.scale)
@@ -42,7 +39,10 @@ class Symbol extends Widget {
 			.text(this.letter, this.position.x, this.position.y);
 		this.p.strokeWeight(1);
 
-		this.p.fill(255,0,0);
-		this.p.ellipse(this.position.x, this.position.y, 10, 10);
+		if(window.location.hash === "#debug") {
+			this.p.stroke(255, 0, 0).noFill();
+			this.p.ellipse(this.position.x, this.position.y, 10, 10);
+			this.p.ellipse(this.position.x, this.position.y, 5, 5);
+		}
 	}
 }
