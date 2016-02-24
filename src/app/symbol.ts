@@ -26,10 +26,8 @@ class Symbol extends Widget {
 	}
 
 	boundingBox(): Rect {
-		var offset = 100;
-		this.p.textAlign(this.p.CENTER, this.p.BASELINE);
-		var box = this.s.font.textBounds(this.letter, offset, offset, this.scale * 120);
-		this.bounds = new Rect( box.x-(offset + box.w/2), box.y-(offset - box.h/2), box.w, box.h);
+		var box = this.s.font.textBounds(this.letter, 0, 1000, this.scale * 120);
+		this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
 		return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
 	}
 
