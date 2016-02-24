@@ -130,10 +130,20 @@ class Widget {
 		child.parentWidget = this;
 		// snap the child into position,
 		var np = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[index], this.scale));
+		// FIXME Do the docking around the center of the bounding box instead of the basepoint (or something along those lines)
 		child.moveBy(p5.Vector.sub(np, child.position));
 		// and scale it appropriately.
 		child.scale = this.scale * this.dockingPointScales[index];
 		// Well done!
+	}
+
+	// Shakes up the subtree to make everything look nicer.
+	//   (the only was this could be better is if I was writing this in Swift)
+	shakeIt() {
+		// Go through the children that aren't null
+		_.each(this.children, child => {
+			// and move them nicely according to their bounding boxes, and perhaps kerning?
+		});
 	}
 
 	removeFromParent() {
