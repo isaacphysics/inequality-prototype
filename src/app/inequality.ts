@@ -121,9 +121,9 @@ class MySketch {
 			this.prevTouch.y = this.p.touchY;
 
 			// Check if we are moving close to a docking point, and highlight it even more.
-			_.flatten(_.map(this.symbols, symbol => {
+			_.each(_.flatten(_.map(this.symbols, symbol => {
 				return symbol.getAllChildren();
-			})).forEach( symbol => {
+			})), (symbol: Widget) => {
 				// FIXME This is truly awful.
 				symbol.highlightDockingPoint = -1;
 				// This is the point where the mouse/touch is.
@@ -150,10 +150,9 @@ class MySketch {
 			var shouldRemoveFromRoots = false;
 
 			// I don't like having to do this again, but hey...
-
-			_.flatten(_.map(this.symbols, symbol => {
+			_.each(_.flatten(_.map(this.symbols, symbol => {
 				return symbol.getAllChildren();
-			})).some( symbol => {
+			})), (symbol: Widget) => {
 				// This is the point where the mouse/touch is.
 				var hitPoint = this.p.createVector(this.p.touchX, this.p.touchY);
 				// Let's find a symbol that is close enough for us to be close to its docking points
