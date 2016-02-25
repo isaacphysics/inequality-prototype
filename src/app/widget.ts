@@ -30,6 +30,10 @@ class Widget {
 	id: number = -1;
 	position: p5.Vector;
 
+	//get dockingPoint(): p5.Vector {
+	//	return this.position;
+	//}
+
 	dockingPoints: Array<p5.Vector> = [];
 	dockingPointScales: Array<number> = [];
 	dockingPointTypes: Array<string> = [];
@@ -48,16 +52,11 @@ class Widget {
 		// Default position is [0, 0]
 		this.position = p.createVector(0, 0);
 
-		this.dockingPoints = _.range(0, 7).map( n => {
-			// Yes, there is a minus sign over there, because the y-axis is flipped.
-			// Thank you, analog TV.
-			// FIXME 80 is hardcoded (look further down too!)
-			return p.createVector(Math.cos( (n/8) * 2*Math.PI), -Math.sin( (n/8) * 2*Math.PI)).mult(80);
-		});
-		this.dockingPointScales = _.range(0,7).map(() => { return 1.0; });
-		this.dockingPointTypes = _.range(0,7).map(() => { return null; });
+		this.dockingPoints = _.map(_.range(0, 7), (n) => { return this.defaultDockingPointPositionForIndex(n); });
+		this.dockingPointScales = _.range(0, 7).map(() => { return 1.0; });
+		this.dockingPointTypes = _.range(0, 7).map(() => { return null; });
 		this.docksTo = [];
-		this.children = _.range(0,7).map(() => { return null; });
+		this.children = _.range(0, 7).map(() => { return null; });
 	}
 
 	draw() {
@@ -128,22 +127,43 @@ class Widget {
 		this.children[index] = child;
 		// set the child's parent to this symbol,
 		child.parentWidget = this;
-		// snap the child into position,
-		var np = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[index], this.scale));
-		// FIXME Do the docking around the center of the bounding box instead of the basepoint (or something along those lines)
-		child.moveBy(p5.Vector.sub(np, child.position));
-		// and scale it appropriately.
-		child.scale = this.scale * this.dockingPointScales[index];
-		// Well done!
+		// snap the child into position
+		this.shakeIt();
 	}
 
 	// Shakes up the subtree to make everything look nicer.
 	//   (the only way this could be better is if I was writing this in Swift)
 	shakeIt() {
-		// Go through the children that aren't null
-		_.each(this.children, child => {
-			// and move them nicely according to their bounding boxes, and perhaps kerning?
+		// Go through the children that aren't null.
+		_.each(this.children, (child: Widget, index: number) => {
+			if(child != null) {
+				// Scale the child appropriately,
+				child.scale = this.scale * this.dockingPointScales[index];
+				// move the corresponding docking point somewhere nice,
+				// TODO
+				// and move the child along with it.
+				child.dock(this.dockingPoints[index]);
+				// Haters gonna hate.
+				child.shakeIt();
+			} else {
+				// Restore the docking point to its "natural" position.
+				this.dockingPoints[index] = this.defaultDockingPointPositionForIndex(index);
+			}
 		});
+	}
+
+	// It's the widget's responsibility to generate its own docking points
+	defaultDockingPointPositionForIndex(index: number): p5.Vector {
+		// Yes, there is a minus sign over there, because the y-axis is flipped.
+		// Thank you, analog TV.
+		return this.p.createVector(Math.cos( (index/8) * 2*Math.PI), -Math.sin( (index/8) * 2*Math.PI)).mult(80);
+	}
+
+	// It'll be the widget's responsibility to position itself relative to its parent's docking point
+	dock(p: p5.Vector) {
+		var np = p5.Vector.add(this.position, p5.Vector.mult(p, this.scale));
+		// FIXME Do the docking around the center of the bounding box instead of the basepoint (or something along those lines)
+		this.moveBy(p5.Vector.sub(np, this.position));
 	}
 
 	removeFromParent() {
@@ -166,9 +186,6 @@ class Widget {
 		_.each(this.children, child => {
 			if(child != null) {
 				w = child.hit(p);
-				//if(w != null) {
-				//	return true;
-				//}
 			}
 		});
 		if(w != null) {
@@ -185,9 +202,6 @@ class Widget {
 		_.each(this.children, child => {
 			if(child != null) {
 				w = child.externalHit(p);
-				//if(w != null) {
-				//	return true;
-				//}
 			}
 		});
 		if(w != null) {
