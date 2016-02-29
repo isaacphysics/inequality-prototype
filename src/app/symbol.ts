@@ -2,7 +2,6 @@ import { Widget, Rect } from './widget.ts'
 
 export
 class Symbol extends Widget {
-	letter = "NULL";
 	bounds: Rect = null;
 
 	get dockingPoint(): p5.Vector {
@@ -10,18 +9,17 @@ class Symbol extends Widget {
 		return p;
 	}
 
-	constructor(p: any, private s: any, letter: string) {
+	constructor(p: any, private s: any, private letter: string) {
 		super(p, s);
-		this.letter = letter;
 
-		this.dockingPoints = _.map(_.range(0, 3), (n) => { return this.defaultDockingPointForIndex(n); });
+		this.dockingPoints = _.map(_.range(0, 3), (n) => { return this.defaultDockingPointPositionForIndex(n); });
 		this.dockingPointScales = [1.0, 0.6, 0.6];
 		this.dockingPointTypes = ['operator', 'exponent', 'subscript'];
 		this.docksTo = ['symbol', 'operator', 'exponent', 'subscript'];
 		this.children = [null, null, null];
 	}
 
-	defaultDockingPointForIndex(index: number): p5.Vector {
+	defaultDockingPointPositionForIndex(index: number): p5.Vector {
 		var box = this.boundingBox();
 		switch(index) {
 			case 0:
@@ -34,7 +32,7 @@ class Symbol extends Widget {
 	}
 
 	boundingBox(): Rect {
-		var box = this.s.font.textBounds(this.letter, 0, 1000, this.scale * 120);
+		var box = this.s.font.textBounds(this.letter || "e", 0, 1000, this.scale * 120);
 		this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
 		return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
 	}

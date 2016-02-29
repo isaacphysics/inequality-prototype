@@ -134,9 +134,10 @@ class Widget {
 	// Shakes up the subtree to make everything look nicer.
 	//   (the only way this could be better is if I was writing this in Swift)
 	shakeIt() {
-		// Go through the children that aren't null.
+		// Go through the children
+		//console.log(this);
 		_.each(this.children, (child: Widget, index: number) => {
-			if(child != null) {
+			if(child != null) { // If the child is not null, move it around
 				// Scale the child appropriately,
 				child.scale = this.scale * this.dockingPointScales[index];
 				// move the corresponding docking point somewhere nice,
@@ -146,7 +147,7 @@ class Widget {
 				// Haters gonna hate.
 				child.shakeIt();
 			} else {
-				// Restore the docking point to its "natural" position.
+				// If the child is null, this is a docking point, thus restore it to its "natural" position.
 				this.dockingPoints[index] = this.defaultDockingPointPositionForIndex(index);
 			}
 		});
@@ -169,6 +170,8 @@ class Widget {
 	removeFromParent() {
 		this.parentWidget.removeChild(this);
 		this.parentWidget = null;
+
+		this.shakeIt();
 	}
 
 	removeChild(child: Widget) {
