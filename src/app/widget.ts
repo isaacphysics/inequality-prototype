@@ -108,55 +108,6 @@ class Widget {
 		}
 	}
 
-	setDockingPointsToDraw(points: Array<string>) {
-		this.children.forEach( child => {
-			if(child != null) {
-				child.setDockingPointsToDraw(points);
-			}
-		});
-		this.dockingPointsToDraw = points;
-	}
-
-	clearDockingPointsToDraw() {
-		this.children.forEach( child => {
-			if(child != null) {
-				child.setDockingPointsToDraw([]);
-			}
-		});
-		this.dockingPointsToDraw = [];
-	}
-
-	setChild(index: number, child: Widget) {
-		// Add the child to this symbol,
-		this.children[index] = child;
-		// set the child's parent to this symbol,
-		child.parentWidget = this;
-		// snap the child into position
-		this.shakeIt();
-	}
-
-	// Shakes up the subtree to make everything look nicer.
-	//   (the only way this could be better is if I was writing this in Swift)
-	shakeIt() {
-		// Go through the children
-		//console.log(this);
-		_.each(this.children, (child: Widget, index: number) => {
-			if(child != null) { // If the child is not null, move it around
-				// Scale the child appropriately,
-				child.scale = this.scale * this.dockingPointScales[index];
-				// move the corresponding docking point somewhere nice,
-				// TODO
-				// and move the child along with it.
-				child.dock(this.dockingPoints[index]);
-				// Haters gonna hate.
-				child.shakeIt();
-			} else {
-				// If the child is null, this is a docking point, thus restore it to its "natural" position.
-				this.dockingPoints[index] = this.defaultDockingPointPositionForIndex(index);
-			}
-		});
-	}
-
 	// It's the widget's responsibility to generate its own docking points
 	defaultDockingPointPositionForIndex(index: number): p5.Vector {
 		// Yes, there is a minus sign over there, because the y-axis is flipped.
@@ -169,6 +120,39 @@ class Widget {
 		var np = p5.Vector.add(this.position, p5.Vector.mult(p, this.scale));
 		// FIXME Do the docking around the center of the bounding box instead of the basepoint (or something along those lines)
 		this.moveBy(p5.Vector.sub(np, this.position));
+	}
+
+	// The BLUE one with the PURPLE-ish border
+	boundingBox(): Rect {
+		// These numbers are hardcoded, but I suppose that's OK for now...
+		return new Rect(this.position.x-this.scale*50, this.position.y-this.scale*50, this.scale * 100, this.scale * 100);
+	}
+
+	// The GREEN one
+	dockingBoundingBox(): Rect {
+		var box = this.boundingBox();
+		var left = box.x, right = box.x + box.w, top = box.y, bottom = box.y + box.h;
+		_.each(this.dockingPoints, (point) => {
+			if(left > this.position.x + point.x - 10*this.scale) { left = this.position.x + this.scale*(point.x - 10); }
+			if(top > this.position.y + point.y - 10*this.scale) { top = this.position.y + this.scale*(point.y - 10); }
+			if(right < this.position.x + this.scale*(point.x - 10)) { right = this.position.x + this.scale*(point.x + 10); }
+			if(bottom < this.position.y + this.scale*(point.y - 10)) { bottom = this.position.y + this.scale*(point.y + 10); }
+		});
+		return new Rect(left, top, right-left, bottom-top);
+	}
+
+	// ************ //
+
+	subtreeBoundingBox(): Rect {
+		var [box, ...subtree] = _.map(this.getAllChildren(), (c) => { return c.boundingBox() });
+		var left = box.x, right = box.x + box.w, top = box.y, bottom = box.y + box.h;
+		_.each(subtree, (c) => {
+			if(left > c.x) { left = c.x; }
+			if(top > c.y) { top = c.y; }
+			if(right < c.x + c.w) { right = c.x + c.w; }
+			if(bottom < c.y + c.h) { bottom = c.y + c.h; }
+		});
+		return new Rect(left, top, right-left, bottom-top);
 	}
 
 	removeFromParent() {
@@ -253,34 +237,52 @@ class Widget {
 		});
 	}
 
-	// The BLUE one with the PURPLE-ish border
-	boundingBox(): Rect {
-		// These numbers are hardcoded, but I suppose that's OK for now...
-		return new Rect(this.position.x-this.scale*50, this.position.y-this.scale*50, this.scale * 100, this.scale * 100);
+	setDockingPointsToDraw(points: Array<string>) {
+		this.children.forEach( child => {
+			if(child != null) {
+				child.setDockingPointsToDraw(points);
+			}
+		});
+		this.dockingPointsToDraw = points;
 	}
 
-	// The GREEN one
-	dockingBoundingBox(): Rect {
-		var box = this.boundingBox();
-		var left = box.x, right = box.x + box.w, top = box.y, bottom = box.y + box.h;
-		_.each(this.dockingPoints, (point) => {
-			if(left > this.position.x + point.x - 10*this.scale) { left = this.position.x + this.scale*(point.x - 10); }
-			if(top > this.position.y + point.y - 10*this.scale) { top = this.position.y + this.scale*(point.y - 10); }
-			if(right < this.position.x + this.scale*(point.x - 10)) { right = this.position.x + this.scale*(point.x + 10); }
-			if(bottom < this.position.y + this.scale*(point.y - 10)) { bottom = this.position.y + this.scale*(point.y + 10); }
+	clearDockingPointsToDraw() {
+		this.children.forEach( child => {
+			if(child != null) {
+				child.setDockingPointsToDraw([]);
+			}
 		});
-		return new Rect(left, top, right-left, bottom-top);
+		this.dockingPointsToDraw = [];
 	}
 
-	subtreeBoundingBox(): Rect {
-		var [box, ...subtree] = _.map(this.getAllChildren(), (c) => { return c.boundingBox() });
-		var left = box.x, right = box.x + box.w, top = box.y, bottom = box.y + box.h;
-		_.each(subtree, (c) => {
-			if(left > c.x) { left = c.x; }
-			if(top > c.y) { top = c.y; }
-			if(right < c.x + c.w) { right = c.x + c.w; }
-			if(bottom < c.y + c.h) { bottom = c.y + c.h; }
+	setChild(index: number, child: Widget) {
+		// Add the child to this symbol,
+		this.children[index] = child;
+		// set the child's parent to this symbol,
+		child.parentWidget = this;
+		// snap the child into position
+		this.shakeIt();
+	}
+
+	// Shakes up the subtree to make everything look nicer.
+	//   (the only way this could be better is if I was writing this in Swift)
+	shakeIt() {
+		// Go through the children
+		//console.log(this);
+		this.children.forEach((child: Widget, index: number) => {
+			if(child != null) { // If the child is not null, move it around
+				// Scale the child appropriately,
+				child.scale = this.scale * this.dockingPointScales[index];
+				// move the corresponding docking point somewhere nice,
+				// TODO
+				// and move the child along with it.
+				child.dock(p5.Vector.add(this.position, this.dockingPoints[index]));
+				// Haters gonna hate.
+				child.shakeIt();
+			} else {
+				// If the child is null, this is a docking point, thus restore it to its "natural" position.
+				this.dockingPoints[index] = this.defaultDockingPointPositionForIndex(index);
+			}
 		});
-		return new Rect(left, top, right-left, bottom-top);
 	}
 }
