@@ -19,6 +19,10 @@ class Rect {
 	contains(p: p5.Vector): boolean {
 		return (p.x >= this.x) && (p.y >= this.y) && (p.x <= this.x+this.w) && (p.y <= this.y+this.h);
 	}
+
+	get center() {
+		return new p5.Vector(this.x + this.w/2, this.y + this.h/2);
+	}
 }
 
 export
