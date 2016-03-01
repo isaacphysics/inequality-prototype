@@ -31,6 +31,17 @@ class Symbol extends Widget {
 		}
 	}
 
+	dock(p: p5.Vector) {
+		if(this.parentWidget instanceof Symbol) {
+			var np: p5.Vector = p5.Vector.sub(p, this.boundingBox().center);
+			this.moveBy(np);
+		} else {
+			var np: p5.Vector = p5.Vector.sub(p, this.boundingBox().center);
+			// FIXME Do the docking around the center of the bounding box instead of the basepoint (or something along those lines)
+			this.moveBy(np);
+		}
+	}
+
 	boundingBox(): Rect {
 		var box = this.s.font.textBounds(this.letter || "e", 0, 1000, this.scale * 120);
 		this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
