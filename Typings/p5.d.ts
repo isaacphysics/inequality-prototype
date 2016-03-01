@@ -80,6 +80,7 @@ declare module p5 {
         x: number;
         y: number;
         z: number;
+        new(x: number, y: number, z?: number);
         lerp(x: any, y?: any, z?: any, amt?: any): void;
         dist(v1: Vector, v2?: Vector): number;
         add(v1: Vector, v2?: Vector): Vector;
