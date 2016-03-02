@@ -20,7 +20,7 @@ class Symbol extends Widget {
 	}
 
 	defaultDockingPointPositionForIndex(index: number): p5.Vector {
-		var box = this.boundingBox();
+		var box = this._fakeBoundingBox();
 		switch(index) {
 			case 0:
 				return this.p.createVector(box.w, -box.h/2);
@@ -46,6 +46,22 @@ class Symbol extends Widget {
 		var box = this.s.font.textBounds(this.letter || "e", 0, 1000, this.scale * 120);
 		this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
 		return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
+	}
+
+	_fakeBoundingBox(): Rect {
+		// This whole function sucks. Sue me.
+		if(this.letter >= 'A' && this.letter <= 'Z') {
+			var box = this.s.font.textBounds('x', 0, 1000, this.scale * 120);
+			this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
+			return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
+		} else if(this.letter >= 'a' && this.letter <= 'z') {
+			var box = this.s.font.textBounds('x', 0, 1000, this.scale * 120);
+			this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
+			return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
+		} else {
+			return new Rect(0,0,0,0);
+		}
+		// Ok, and what if it's a number?!
 	}
 
 	draw() {

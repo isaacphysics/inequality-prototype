@@ -94,17 +94,19 @@ class Widget {
 			}
 		});
 
+		this.p.noFill();
 		if(window.location.hash === "#debug") {
-			var bigBox = this.subtreeBoundingBox();
+			var box = this.boundingBox();
+			this.p.stroke(255, 0, 0);
+			this.p.rect(box.x, box.y, box.w, box.h);
 
-			this.p.fill(127, 192, 255, 15);
-			this.p.stroke(255, 0, 127, 63);
-			this.p.rect(bigBox.x, bigBox.y, bigBox.w, bigBox.h);
+			var subtreeBox = this.subtreeBoundingBox();
+			this.p.stroke(0, 0, 255);
+			this.p.rect(subtreeBox.x, subtreeBox.y, subtreeBox.w, subtreeBox.h);
 
-			var weirdBox = this.dockingBoundingBox();
-			this.p.fill(127, 255, 192, 15);
-			this.p.stroke(127, 255, 0, 63);
-			this.p.rect(weirdBox.x, weirdBox.y, weirdBox.w, weirdBox.h);
+			var dockingBox = this.dockingBoundingBox();
+			this.p.stroke(0, 127, 0);
+			this.p.rect(dockingBox.x, dockingBox.y, dockingBox.w, dockingBox.h);
 		}
 	}
 
@@ -122,7 +124,7 @@ class Widget {
 		this.moveBy(p5.Vector.sub(np, this.position));
 	}
 
-	// The BLUE one with the PURPLE-ish border
+	// The RED one with the PURPLE-ish border
 	boundingBox(): Rect {
 		// These numbers are hardcoded, but I suppose that's OK for now...
 		return new Rect(this.position.x-this.scale*50, this.position.y-this.scale*50, this.scale * 100, this.scale * 100);
@@ -143,6 +145,7 @@ class Widget {
 
 	// ************ //
 
+	// The BLUE one
 	subtreeBoundingBox(): Rect {
 		var [box, ...subtree] = _.map(this.getAllChildren(), (c) => { return c.boundingBox() });
 		var left = box.x, right = box.x + box.w, top = box.y, bottom = box.y + box.h;
