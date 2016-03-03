@@ -281,7 +281,7 @@ class Widget {
 				var thisbox = this.boundingBox();
 				var childbox = child.boundingBox();
 				var gap = (thisbox.x+thisbox.w) - (childbox.x);
-				this.dockingPoints[index].x += gap;
+				this.dockingPoints[index] = p5.Vector.add(this.defaultDockingPointPositionForIndex(index), this.p.createVector(gap, 0));
 				// and move the child along with it.
 				child.dock(p5.Vector.add(this.position, this.dockingPoints[index]));
 				// Haters gonna hate.
