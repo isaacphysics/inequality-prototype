@@ -173,6 +173,8 @@ class Widget {
 				return e;
 			}
 		});
+
+		this.shakeIt();
 	}
 
 	hit(p: p5.Vector): Widget {
@@ -271,19 +273,21 @@ class Widget {
 	//   (the only way this could be better is if I was writing this in Swift)
 	shakeIt() {
 		// Go through the children
-		//console.log(this);
 		this.children.forEach((child: Widget, index: number) => {
 			if(child != null) { // If the child is not null, move it around
 				// Scale the child appropriately,
 				child.scale = this.scale * this.dockingPointScales[index];
 				// move the corresponding docking point somewhere nice,
-				// TODO
+				var thisbox = this.boundingBox();
+				var childbox = child.boundingBox();
+				var gap = (thisbox.x+thisbox.w) - (childbox.x);
+				this.dockingPoints[index].x += gap;
 				// and move the child along with it.
 				child.dock(p5.Vector.add(this.position, this.dockingPoints[index]));
 				// Haters gonna hate.
 				child.shakeIt();
 			} else {
-				// If the child is null, this is a docking point, thus restore it to its "natural" position.
+				// If the child is null, this is a docking point, thus restore it to its "natural" position
 				this.dockingPoints[index] = this.defaultDockingPointPositionForIndex(index);
 			}
 		});
