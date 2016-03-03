@@ -42,6 +42,40 @@ class Symbol extends Widget {
 		}
 	}
 
+	// This may eventually make sense, or not...
+	shakeIt() {
+		// Go through the children, first the (sub|super)scripts, then the binary operation.
+		_.each([1,2,0], (index: number) => {
+			var child = this.children[index];
+			if(child != null) { // If the child is not null, move it around
+				// Scale the child appropriately,
+				child.scale = this.scale * this.dockingPointScales[index];
+				// move the corresponding docking point somewhere nice,
+				// FIXME Complete this
+				switch(index) {
+					case 0:
+						var thisbox = this.boundingBox();
+						var childbox = child.boundingBox();
+						var gap = (thisbox.x+thisbox.w) - (childbox.x);
+						this.dockingPoints[index] = p5.Vector.add(this.defaultDockingPointPositionForIndex(index), this.p.createVector(gap, 0));
+						// and move the child along with it.
+						child.dock(p5.Vector.add(this.position, this.dockingPoints[index]));
+						break;
+					case 1:
+						break;
+					case 2:
+						break;
+				}
+				// Haters gonna hate.
+				child.shakeIt();
+			} else {
+				// If the child is null, this is a docking point, thus restore it to its "natural" position
+				this.dockingPoints[index] = this.defaultDockingPointPositionForIndex(index);
+			}
+		});
+	}
+
+
 	boundingBox(): Rect {
 		var box = this.s.font.textBounds(this.letter || "e", 0, 1000, this.scale * 120);
 		this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
