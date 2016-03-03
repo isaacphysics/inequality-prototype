@@ -5,7 +5,8 @@ class Symbol extends Widget {
 	bounds: Rect = null;
 
 	get dockingPoint(): p5.Vector {
-		var p = this.p.createVector(this.position.x, this.boundingBox().y + this.boundingBox().h/2);
+		var box = this.s.font.textBounds("x", 0, 1000, this.scale * 120);
+		var p = this.p.createVector(this.position.x, this.position.y - box.h/2);
 		return p;
 	}
 
@@ -33,11 +34,10 @@ class Symbol extends Widget {
 
 	dock(p: p5.Vector) {
 		if(this.parentWidget instanceof Symbol) {
-			var np: p5.Vector = p5.Vector.sub(p, this.boundingBox().center);
+			var np: p5.Vector = p5.Vector.sub(p, this.dockingPoint);
 			this.moveBy(np);
 		} else {
 			var np: p5.Vector = p5.Vector.sub(p, this.boundingBox().center);
-			// FIXME Do the docking around the center of the bounding box instead of the basepoint (or something along those lines)
 			this.moveBy(np);
 		}
 	}
