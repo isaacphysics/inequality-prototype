@@ -137,8 +137,8 @@ class Widget {
 		_.each(this.dockingPoints, (point) => {
 			if(left > this.position.x + point.x - 10*this.scale) { left = this.position.x + this.scale*(point.x - 10); }
 			if(top > this.position.y + point.y - 10*this.scale) { top = this.position.y + this.scale*(point.y - 10); }
-			if(right < this.position.x + this.scale*(point.x - 10)) { right = this.position.x + this.scale*(point.x + 10); }
-			if(bottom < this.position.y + this.scale*(point.y - 10)) { bottom = this.position.y + this.scale*(point.y + 10); }
+			if(right < this.position.x + this.scale*(point.x + 10)) { right = this.position.x + this.scale*(point.x + 10); }
+			if(bottom < this.position.y + this.scale*(point.y + 10)) { bottom = this.position.y + this.scale*(point.y + 10); }
 		});
 		return new Rect(left, top, right-left, bottom-top);
 	}
