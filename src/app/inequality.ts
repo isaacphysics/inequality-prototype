@@ -21,7 +21,7 @@ limitations under the License.
 /* tslint:disable: no-unused-variable */
 /* tslint:disable: comment-format */
 
-import { Widget } from './widget.ts'
+import { Widget, Rect } from './widget.ts'
 import { Symbol } from './symbol.ts'
 
 // This is where the fun starts
@@ -33,6 +33,9 @@ class MySketch {
 	symbols: Array<Widget>;
 	movingSymbol: Widget = null;
 	prevTouch: p5.Vector = null;
+
+	xBox: Rect = null;
+	mBox: Rect = null;
 
 	baseFontSize = 120;
 	font: p5.Font = null;
@@ -51,12 +54,13 @@ class MySketch {
 	};
 
 	setup = () => {
-		this.font.textBounds("x", 0, 1000, this.baseFontSize);
+		this.xBox = this.font.textBounds("x", 0, 1000, this.baseFontSize);
+		this.mBox = this.font.textBounds("M", 0, 1000, this.baseFontSize);
 
 		this.symbols = [];
 		this.p.createCanvas(800, 600);
 
-		this.symbols = _.map([[100, 100, "M"], [300, 200, "x"], [500, 150, "i"], [700, 250, "j"]], (p) => {
+		this.symbols = _.map([[100, 400, "M"], [300, 200, "x"], [500, 150, "i"], [700, 250, "j"]], (p) => {
 			var s = new Symbol(this.p, this, p[2]);
 			s.position = this.p.createVector(p[0], p[1]);
 			return s;
