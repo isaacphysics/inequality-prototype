@@ -5,7 +5,7 @@ class Symbol extends Widget {
 	bounds: Rect = null;
 
 	get dockingPoint(): p5.Vector {
-		var box = this.s.font.textBounds("x", 0, 1000, this.scale * 120);
+		var box = this.s.font.textBounds("x", 0, 1000, this.scale * this.s.baseFontSize);
 		var p = this.p.createVector(this.position.x, this.position.y - box.h/2);
 		return p;
 	}
@@ -77,7 +77,7 @@ class Symbol extends Widget {
 
 
 	boundingBox(): Rect {
-		var box = this.s.font.textBounds(this.letter || "e", 0, 1000, this.scale * 120);
+		var box = this.s.font.textBounds(this.letter || "e", 0, 1000, this.scale * this.s.baseFontSize);
 		this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
 		return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
 	}
@@ -85,11 +85,11 @@ class Symbol extends Widget {
 	_fakeBoundingBox(): Rect {
 		// This whole function sucks. Sue me.
 		if(this.letter >= 'A' && this.letter <= 'Z') {
-			var box = this.s.font.textBounds('x', 0, 1000, this.scale * 120);
+			var box = this.s.font.textBounds('x', 0, 1000, this.scale * this.s.baseFontSize);
 			this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
 			return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
 		} else if(this.letter >= 'a' && this.letter <= 'z') {
-			var box = this.s.font.textBounds('x', 0, 1000, this.scale * 120);
+			var box = this.s.font.textBounds('x', 0, 1000, this.scale * this.s.baseFontSize);
 			this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
 			return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
 		} else {
@@ -104,7 +104,7 @@ class Symbol extends Widget {
 		this.p.fill(0).strokeWeight(0).noStroke();
 
 		this.p.textFont(this.s.font)
-			.textSize(120 * this.scale)
+			.textSize(this.s.baseFontSize * this.scale)
 			.textAlign(this.p.CENTER, this.p.BASELINE)
 			.text(this.letter, this.position.x, this.position.y);
 		this.p.strokeWeight(1);

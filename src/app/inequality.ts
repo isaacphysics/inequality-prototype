@@ -34,6 +34,7 @@ class MySketch {
 	movingSymbol: Widget = null;
 	prevTouch: p5.Vector = null;
 
+	baseFontSize = 120;
 	font: p5.Font = null;
 
 	constructor(private p) {
@@ -50,6 +51,8 @@ class MySketch {
 	};
 
 	setup = () => {
+		this.font.textBounds("x", 0, 1000, this.baseFontSize);
+
 		this.symbols = [];
 		this.p.createCanvas(800, 600);
 
