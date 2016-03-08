@@ -23,14 +23,13 @@ class Symbol extends Widget {
 	defaultDockingPointPositionForIndex(index: number): p5.Vector {
 		var box = this.boundingBox();
 		var descent = this.position.y - (box.y+box.h);
-		console.log(this.letter + ": " + descent);
 		switch(index) {
 			case 0:
 				return this.p.createVector(box.w/2 + this.s.mBox.w/4, -this.s.xBox.h/2);
 			case 1:
-				return this.p.createVector(box.w/2 + this.scale*20, -box.h -descent -this.scale*20);
+				return this.p.createVector(box.w/2 + this.scale*20, -(box.h + descent + this.scale*20));
 			case 2:
-				return this.p.createVector(box.w/2 + this.scale*20, box.h * 1/4);
+				return this.p.createVector(box.w/2 + this.scale*20, this.scale*20);
 		}
 	}
 
