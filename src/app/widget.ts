@@ -97,15 +97,15 @@ class Widget {
 		this.p.noFill();
 		if(window.location.hash === "#debug") {
 			var box = this.boundingBox();
-			this.p.stroke(255, 0, 0);
+			this.p.stroke(255, 0, 0, 64);
 			this.p.rect(box.x, box.y, box.w, box.h);
 
 			var subtreeBox = this.subtreeBoundingBox();
-			this.p.stroke(0, 0, 255);
+			this.p.stroke(0, 0, 255, 64);
 			this.p.rect(subtreeBox.x, subtreeBox.y, subtreeBox.w, subtreeBox.h);
 
 			var dockingBox = this.dockingBoundingBox();
-			this.p.stroke(0, 127, 0);
+			this.p.stroke(0, 127, 0, 64);
 			this.p.rect(dockingBox.x, dockingBox.y, dockingBox.w, dockingBox.h);
 		}
 	}
@@ -186,11 +186,11 @@ class Widget {
 		});
 		if(w != null) {
 			return w;
-		}
-		if(this.boundingBox().contains(p)) {
+		} else if(this.boundingBox().contains(p)) {
 			return this;
+		} else {
+			return null;
 		}
-		return null;
 	}
 
 	externalHit(p: p5.Vector): Widget {
@@ -202,21 +202,20 @@ class Widget {
 		});
 		if(w != null) {
 			return w;
-		}
-		if(this.dockingBoundingBox().contains(p)) {
+		} else if(this.dockingBoundingBox().contains(p)) {
 			return this;
+		} else {
+			return null;
 		}
-		return null;
 	}
 
 	dockingPointsHit(p: p5.Vector): number {
 		// This highlight thing is incredibly fishy, and yet it works...
 		this.highlightDockingPoint = -1;
-		this.dockingPoints.some( (e, i) => {
+		_.each(this.dockingPoints, (e, i) => {
 			var dp = p5.Vector.add(p5.Vector.mult(e, this.scale), this.position);
 			if(p5.Vector.dist(p, dp) < 10) {
 				this.highlightDockingPoint = i;
-				return true;
 			}
 		});
 		return this.highlightDockingPoint;
@@ -263,7 +262,7 @@ class Widget {
 	setChild(index: number, child: Widget) {
 		// Add the child to this symbol,
 		this.children[index] = child;
-		// set the child's parent to this symbol,
+		// set this symbol as the child's parent
 		child.parentWidget = this;
 		// snap the child into position
 		this.shakeIt();
@@ -278,9 +277,9 @@ class Widget {
 				// Scale the child appropriately,
 				child.scale = this.scale * this.dockingPointScales[index];
 				// move the corresponding docking point somewhere nice,
-				var thisbox = this.boundingBox();
-				var childbox = child.boundingBox();
-				var gap = (thisbox.x+thisbox.w) - (childbox.x);
+				var thisBox = this.boundingBox();
+				var childBox = child.boundingBox();
+				var gap = (thisBox.x + thisBox.w) - (childBox.x);
 				this.dockingPoints[index] = p5.Vector.add(this.defaultDockingPointPositionForIndex(index), this.p.createVector(gap, 0));
 				// and move the child along with it.
 				child.dock(p5.Vector.add(this.position, this.dockingPoints[index]));

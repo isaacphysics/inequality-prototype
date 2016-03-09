@@ -35,43 +35,46 @@ class Symbol extends Widget {
 
 	dock(p: p5.Vector) {
 		if(this.parentWidget instanceof Symbol) {
-			var np: p5.Vector = p5.Vector.sub(p, this.dockingPoint);
+			var np = p5.Vector.sub(p, this.dockingPoint);
 			this.moveBy(np);
 		} else {
-			var np: p5.Vector = p5.Vector.sub(p, this.boundingBox().center);
+			var np: p5.Vector = p5.Vector.sub(p, this.position);
 			this.moveBy(np);
 		}
 	}
 
 	// This may eventually make sense, or not...
 	shakeIt() {
-		// Go through the children, first the (sub|super)scripts, then the binary operation.
-		_.each([1,2,0], (index: number) => {
-			var child = this.children[index];
-			if(child != null) { // If the child is not null, move it around
-				// Scale the child appropriately,
+		// Go through the children, first the (sub|super)scripts...
+		var right = this.position.x + this.scale * (this.dockingPoints[0].x + 10);
+		var rightChanged = false;
+		_.each([1,2], (index) => {
+			if(this.children[index] != null) {
+				var child = this.children[index];
 				child.scale = this.scale * this.dockingPointScales[index];
-				// move the corresponding docking point somewhere nice,
-				// FIXME Complete this
-				switch(index) {
-					case 0:
-						var thisbox = this.boundingBox();
-						var childbox = child.boundingBox();
-						var gap = (thisbox.x+thisbox.w) - (childbox.x);
-						this.dockingPoints[index] = p5.Vector.add(this.defaultDockingPointPositionForIndex(index), this.p.createVector(gap, 0));
-						// and move the child along with it.
-						child.dock(p5.Vector.add(this.position, this.dockingPoints[index]));
-						break;
-					case 1:
-						break;
-					case 2:
-						break;
+				var newPosition = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[index], this.scale));
+				child.dock(newPosition);
+
+				var box = child.subtreeBoundingBox();
+				var boxRight = box.x + box.w;
+				if(boxRight > right) {
+					rightChanged = true;
+					right = boxRight + this.scale*10;
 				}
-				// Haters gonna hate.
-				child.shakeIt();
 			} else {
-				// If the child is null, this is a docking point, thus restore it to its "natural" position
 				this.dockingPoints[index] = this.defaultDockingPointPositionForIndex(index);
+			}
+		});
+		if(rightChanged) {
+			this.dockingPoints[0].x = right - this.position.x - this.scale * 10;
+		} else {
+			this.dockingPoints[0] = this.defaultDockingPointPositionForIndex(0);
+		}
+
+		_.each([1,2,0], (index) => {
+			// Haters gonna hate, hate, hate, hate, hate...
+			if(this.children[index] != null) {
+				this.children[index].shakeIt();
 			}
 		});
 	}

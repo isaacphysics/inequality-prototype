@@ -131,7 +131,6 @@ class MySketch {
 			_.each(_.flatten(_.map(this.symbols, symbol => {
 				return symbol.getAllChildren();
 			})), (symbol: Widget) => {
-				// FIXME This is truly awful.
 				symbol.highlightDockingPoint = -1;
 				// This is the point where the mouse/touch is.
 				var touchPoint = this.p.createVector(this.p.touchX, this.p.touchY);
@@ -140,8 +139,6 @@ class MySketch {
 				if(hitSymbol != null && hitSymbol.id != this.movingSymbol.id) {
 					// If we found a viable candidate, let's see if we hit any of its docking points
 					hitSymbol.dockingPointsHit(touchPoint);
-					//console.log(hitSymbol);
-					//return true;
 				}
 			});
 		}
@@ -149,7 +146,7 @@ class MySketch {
 
 	touchEnded = () => {
 		if(this.movingSymbol != null) {
-			// When touches end, unmark the symbol as moving.
+			// When touches end, mark the symbol as not moving.
 			var formerlyMovingSymbol = this.movingSymbol;
 			this.movingSymbol = null;
 			this.prevTouch = null;
@@ -171,11 +168,10 @@ class MySketch {
 						hitSymbol.highlightDockingPoint = -1;
 						// Actually dock the symbol
 						hitSymbol.setChild(index, formerlyMovingSymbol);
-						// TODO Rearrange children according to scale
 						// Finally, this symbol was among the roots while moving, so if we docked it somewhere,
 						// let's remove it from the roots.
 						shouldRemoveFromRoots = true;
-						return true;
+						//return true;
 					}
 				}
 			});
