@@ -44,9 +44,9 @@ class Symbol extends Widget {
 	}
 
 	// This may eventually make sense, or not...
-	shakeIt() {
+	_shakeIt() {
 		// Go through the children, first the (sub|super)scripts...
-		var right = this.position.x + this.scale * (this.dockingPoints[0].x + 10);
+		var right = this.position.x + this.scale * (this.defaultDockingPointPositionForIndex(0).x + 10);
 		var rightChanged = false;
 		_.each([1,2], (index) => {
 			if(this.children[index] != null) {
@@ -54,6 +54,7 @@ class Symbol extends Widget {
 				child.scale = this.scale * this.dockingPointScales[index];
 				var newPosition = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[index], this.scale));
 				child.dock(newPosition);
+				child._shakeIt();
 
 				var box = child.subtreeBoundingBox();
 				var boxRight = box.x + box.w;
@@ -66,15 +67,22 @@ class Symbol extends Widget {
 			}
 		});
 		if(rightChanged) {
-			this.dockingPoints[0].x = right - this.position.x - this.scale * 10;
+			this.dockingPoints[0] = this.p.createVector(right - this.position.x - this.scale * 10, this.dockingPoints[0].y);
 		} else {
 			this.dockingPoints[0] = this.defaultDockingPointPositionForIndex(0);
+		}
+		if(this.children[0] != null) {
+			var child = this.children[0];
+			child.scale = this.scale * this.dockingPointScales[0];
+			var newPosition = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[0], this.scale));
+			child.dock(newPosition);
+			child._shakeIt();
 		}
 
 		_.each([1,2,0], (index) => {
 			// Haters gonna hate, hate, hate, hate, hate...
 			if(this.children[index] != null) {
-				this.children[index].shakeIt();
+				this.children[index]._shakeIt();
 			}
 		});
 	}

@@ -268,9 +268,19 @@ class Widget {
 		this.shakeIt();
 	}
 
+
+
 	// Shakes up the subtree to make everything look nicer.
 	//   (the only way this could be better is if I was writing this in Swift)
 	shakeIt() {
+		if(this.parentWidget == null) {
+			this._shakeIt();
+		} else {
+			this.parentWidget.shakeIt();
+		}
+	}
+
+	_shakeIt() {
 		// Go through the children
 		this.children.forEach((child: Widget, index: number) => {
 			if(child != null) { // If the child is not null, move it around
@@ -284,7 +294,7 @@ class Widget {
 				// and move the child along with it.
 				child.dock(p5.Vector.add(this.position, this.dockingPoints[index]));
 				// Haters gonna hate.
-				child.shakeIt();
+				child._shakeIt();
 			} else {
 				// If the child is null, this is a docking point, thus restore it to its "natural" position
 				this.dockingPoints[index] = this.defaultDockingPointPositionForIndex(index);
