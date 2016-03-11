@@ -63,6 +63,10 @@ class Widget {
 		this.children = _.range(0, 7).map(() => { return null; });
 	}
 
+	getExpression(format: string): string {
+		return "";
+	}
+
 	draw() {
 		var alpha = 255;
 		if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {

@@ -20,6 +20,23 @@ class Symbol extends Widget {
 		this.children = [null, null, null];
 	}
 
+	getExpression(format: string): string {
+		var expression = "";
+		if(format == "latex") {
+			var expression = "" + this.letter;
+			if (this.children[1] != null) {
+				expression += "^{" + this.children[1].getExpression(format) + "}";
+			}
+			if (this.children[2] != null) {
+				expression += "_{" + this.children[2].getExpression(format) + "}";
+			}
+			if (this.children[0] != null) {
+				expression += " " + this.children[0].getExpression(format);
+			}
+		}
+		return expression;
+	}
+
 	defaultDockingPointPositionForIndex(index: number): p5.Vector {
 		var box = this.boundingBox();
 		var descent = this.position.y - (box.y+box.h);

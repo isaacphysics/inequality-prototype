@@ -188,6 +188,9 @@ class MySketch {
 				symbol.clearDockingPointsToDraw();
 			});
 		}
+		_.each(this.symbols, symbol => {
+			console.log(symbol.id + " -> " + symbol.getExpression("latex"));
+		});
 	};
 }
 
