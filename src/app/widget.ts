@@ -160,7 +160,6 @@ class Widget {
 
 	removeFromParent() {
 		this.parentWidget.removeChild(this);
-		this.parentWidget = null;
 
 		this.shakeIt();
 	}
@@ -173,6 +172,7 @@ class Widget {
 				return e;
 			}
 		});
+		child.parentWidget = null;
 
 		this.shakeIt();
 	}
