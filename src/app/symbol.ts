@@ -23,7 +23,7 @@ class Symbol extends Widget {
 	getExpression(format: string): string {
 		var expression = "";
 		if(format == "latex") {
-			var expression = "" + this.letter;
+			expression = "" + this.letter;
 			if (this.children[1] != null) {
 				expression += "^{" + this.children[1].getExpression(format) + "}";
 			}
@@ -32,6 +32,28 @@ class Symbol extends Widget {
 			}
 			if (this.children[0] != null) {
 				expression += " " + this.children[0].getExpression(format);
+			}
+		} else if(format == "python") {
+			expression = "" + this.letter;
+			if (this.children[2] != null) {
+				expression += "" + this.children[2].getExpression("subscript") + "";
+			}
+			if (this.children[1] != null) {
+				expression += "**(" + this.children[1].getExpression(format) + ")";
+			}
+			if (this.children[0] != null) {
+				expression += "*" + this.children[0].getExpression(format) + " ";
+			}
+		} else if(format == "subscript") {
+			expression = "" + this.letter;
+			if (this.children[2] != null) {
+				expression += "" + this.children[2].getExpression(format) + "";
+			}
+			if (this.children[1] != null) {
+				expression += "" + this.children[1].getExpression(format) + "";
+			}
+			if (this.children[0] != null) {
+				expression += "" + this.children[0].getExpression(format) + "";
 			}
 		}
 		return expression;

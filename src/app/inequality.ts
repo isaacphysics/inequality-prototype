@@ -189,7 +189,7 @@ class MySketch {
 			});
 		}
 		_.each(this.symbols, symbol => {
-			console.log(symbol.id + " -> " + symbol.getExpression("latex"));
+			console.log(symbol.id + " -> " + symbol.getExpression("python"));
 		});
 	};
 }
