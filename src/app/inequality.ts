@@ -23,6 +23,7 @@ limitations under the License.
 
 import { Widget, Rect } from './widget.ts'
 import { Symbol } from './symbol.ts'
+import { BinaryOperation } from "./binaryoperation";
 
 // This is where the fun starts
 
@@ -65,6 +66,14 @@ class MySketch {
 			s.position = this.p.createVector(p[0], p[1]);
 			return s;
 		});
+		var plus = new BinaryOperation(this.p, this, "+");
+		plus.position = this.p.createVector(200, 500);
+		this.symbols.push(plus);
+
+		var minus = new BinaryOperation(this.p, this, "-");
+		minus.position = this.p.createVector(600, 500);
+		this.symbols.push(minus);
+
 
 		this.prevTouch = this.p.createVector(0,0);
 	};

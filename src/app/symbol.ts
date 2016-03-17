@@ -1,4 +1,5 @@
 import { Widget, Rect } from './widget.ts'
+import {BinaryOperation} from "./binaryoperation";
 
 export
 class Symbol extends Widget {
@@ -23,7 +24,7 @@ class Symbol extends Widget {
 	getExpression(format: string): string {
 		var expression = "";
 		if(format == "latex") {
-			expression = "" + this.letter;
+			expression = this.letter;
 			if (this.children[1] != null) {
 				expression += "^{" + this.children[1].getExpression(format) + "}";
 			}
@@ -31,29 +32,39 @@ class Symbol extends Widget {
 				expression += "_{" + this.children[2].getExpression(format) + "}";
 			}
 			if (this.children[0] != null) {
-				expression += " " + this.children[0].getExpression(format);
+				if(this.children[0] instanceof BinaryOperation) {
+					expression += this.children[0].getExpression(format);
+				} else {
+					// WARNING This assumes it's a Symbol, hence produces a multiplication
+					expression += " " + this.children[0].getExpression(format);
+				}
 			}
 		} else if(format == "python") {
 			expression = "" + this.letter;
 			if (this.children[2] != null) {
-				expression += "" + this.children[2].getExpression("subscript") + "";
+				expression += this.children[2].getExpression("subscript");
 			}
 			if (this.children[1] != null) {
 				expression += "**(" + this.children[1].getExpression(format) + ")";
 			}
 			if (this.children[0] != null) {
-				expression += "*" + this.children[0].getExpression(format) + " ";
+				if(this.children[0] instanceof BinaryOperation) {
+					expression += this.children[0].getExpression(format);
+				} else {
+					// WARNING This assumes it's a Symbol, hence produces a multiplication
+					expression += "*" + this.children[0].getExpression(format);
+				}
 			}
 		} else if(format == "subscript") {
 			expression = "" + this.letter;
 			if (this.children[2] != null) {
-				expression += "" + this.children[2].getExpression(format) + "";
+				expression += this.children[2].getExpression(format);
 			}
 			if (this.children[1] != null) {
-				expression += "" + this.children[1].getExpression(format) + "";
+				expression += this.children[1].getExpression(format);
 			}
 			if (this.children[0] != null) {
-				expression += "" + this.children[0].getExpression(format) + "";
+				expression += this.children[0].getExpression(format);
 			}
 		}
 		return expression;
@@ -77,7 +88,7 @@ class Symbol extends Widget {
 			var np = p5.Vector.sub(p, this.dockingPoint);
 			this.moveBy(np);
 		} else {
-			var np: p5.Vector = p5.Vector.sub(p, this.position);
+			var np: p5.Vector = p5.Vector.sub(p, this.dockingPoint);
 			this.moveBy(np);
 		}
 	}
