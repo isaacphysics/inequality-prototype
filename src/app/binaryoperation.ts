@@ -32,7 +32,7 @@ class BinaryOperation extends Widget {
             }
         } else if(format == "subscript") {
             if (this.children[0] != null) {
-                expression += this.operation + "" + this.children[0].getExpression(format);
+                expression += this.children[0].getExpression(format);
             }
         }
         return expression;
