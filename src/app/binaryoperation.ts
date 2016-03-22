@@ -4,6 +4,11 @@ export
 class BinaryOperation extends Widget {
     bounds: Rect = null;
 
+    /**
+     * There's a thing with the baseline and all that... this sort-of fixes it.
+     *
+     * @returns {Vector} The position to which a Symbol is meant to be docked from.
+     */
     get dockingPoint(): p5.Vector {
         var box = this.s.font.textBounds("x", 0, 1000, this.scale * this.s.baseFontSize);
         var p = this.p.createVector(this.position.x, this.position.y - box.h/2);
@@ -20,6 +25,15 @@ class BinaryOperation extends Widget {
         this.children = [null];
     }
 
+    /**
+     * Generates the expression corresponding to this widget and its subtree.
+     *
+     * The `subscript` format is a special one for generating symbols that will work with the sympy checker. It squashes
+     * everything together, ignoring operations and all that jazz.
+     *
+     * @param format A string to specify the output format. Supports: latex, python, subscript.
+     * @returns {string} The expression in the specified format.
+     */
     getExpression(format: string): string {
         var expression = "";
         if(format == "latex") {
@@ -38,47 +52,9 @@ class BinaryOperation extends Widget {
         return expression;
     }
 
-    defaultDockingPointPositionForIndex(index: number): p5.Vector {
-        var box = this.boundingBox();
-        switch(index) {
-            case 0:
-                return this.p.createVector(box.w/2 + this.s.mBox.w/4, -this.s.xBox.h/2);
-        }
-    }
-
-    dock(p: p5.Vector) {
-        // INFO: http://tinyurl.com/o39ju6e
-        if(this.parentWidget instanceof Symbol) {
-            var np: p5.Vector = p5.Vector.sub(p, this.position);
-            this.moveBy(np);
-        } else {
-            var np: p5.Vector = p5.Vector.sub(p, this.dockingPoint);
-            this.moveBy(np);
-        }
-    }
-
-    _shakeIt() {
-        if(this.children[0] != null) {
-            var child = this.children[0];
-            child.scale = this.scale * this.dockingPointScales[0];
-            var newPosition = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[0], this.scale));
-            child.dock(newPosition);
-            child._shakeIt();
-        }
-
-        // Haters gonna hate, hate, hate, hate, hate...
-        if(this.children[0] != null) {
-            this.children[0]._shakeIt();
-        }
-    }
-
-
-    boundingBox(): Rect {
-        var box = this.s.font.textBounds(this.operation || "+", 0, 1000, this.scale * this.s.baseFontSize);
-        this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
-        return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
-    }
-
+    /**
+     * Paints the widget on the canvas.
+     */
     draw() {
         super.draw();
 
@@ -98,6 +74,72 @@ class BinaryOperation extends Widget {
             this.p.stroke(0, 0, 255).noFill();
             this.p.ellipse(this.dockingPoint.x, this.dockingPoint.y, 10, 10);
             this.p.ellipse(this.dockingPoint.x, this.dockingPoint.y, 5, 5);
+        }
+    }
+
+    /**
+     * Generates this widget's docking point positions. A BinaryOperation has one docking point:
+     *
+     * - 0: Symbol
+     *
+     * @param index The docking point's index
+     * @returns {p5.Vector} The position of the requested docking point
+     */
+    defaultDockingPointPositionForIndex(index: number): p5.Vector {
+        var box = this.boundingBox();
+        switch(index) {
+            case 0:
+                return this.p.createVector(box.w/2 + this.s.mBox.w/4, -this.s.xBox.h/2);
+        }
+    }
+
+    /**
+     * Docks this widget to its parent's docking point. This method is called by the parent when asked to set one of its
+     * children. This may or may not behave differently depending on the parent.
+     *
+     * @param p The position of the parent's docking point, passed from the parent.
+     */
+    dock(p: p5.Vector) {
+        // INFO: http://tinyurl.com/o39ju6e
+        if(this.parentWidget instanceof Symbol) {
+            var np: p5.Vector = p5.Vector.sub(p, this.position);
+            this.moveBy(np);
+        } else {
+            var np: p5.Vector = p5.Vector.sub(p, this.dockingPoint);
+            this.moveBy(np);
+        }
+    }
+
+
+    /**
+     * This widget's tight bounding box. This is used for the cursor hit testing.
+     *
+     * @returns {Rect} The bounding box
+     */
+    boundingBox(): Rect {
+        var box = this.s.font.textBounds(this.operation || "+", 0, 1000, this.scale * this.s.baseFontSize);
+        this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
+        return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
+    }
+
+    /**
+     * Internal companion method to shakeIt(). This is the one that actually does the work, and the one that should be
+     * overridden by children of this class.
+     *
+     * @private
+     */
+    _shakeIt() {
+        if(this.children[0] != null) {
+            var child = this.children[0];
+            child.scale = this.scale * this.dockingPointScales[0];
+            var newPosition = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[0], this.scale));
+            child.dock(newPosition);
+            child._shakeIt();
+        }
+
+        // Haters gonna hate, hate, hate, hate, hate...
+        if(this.children[0] != null) {
+            this.children[0]._shakeIt();
         }
     }
 }

@@ -25,27 +25,44 @@ class Rect {
 	}
 }
 
+/**
+ * A base class for anything visible, draggable, and dockable.
+ */
 export
 class Widget {
+	/// p5 instance, I guess?
 	protected p: any;
+	/// Unique ID
+	id: number = -1;
 
+	/// Scaling factor for this widget (affected by where a widget is docked, typically)
 	scale: number = 1.0;
 
-	id: number = -1;
+	/// Position of this widget
 	position: p5.Vector;
 
-	//get dockingPoint(): p5.Vector {
-	//	return this.position;
-	//}
-
+	/// Points to which other widgets can dock
 	dockingPoints: Array<p5.Vector> = [];
+
+	/// An array of scales that a certain docking point imposes to its subtree
 	dockingPointScales: Array<number> = [];
+
+	/// An array of the types of this widget's docking point
 	dockingPointTypes: Array<string> = [];
+
+	/// An array of the types of docking points that this widget can dock to
 	docksTo: Array<string> = [];
+
+	/// Cosmetic parameter to highlight the docking point currently being hovered
 	highlightDockingPoint: number = -1;
+
+	/// An array set by the currently moving symbol that tells us to only draw the docking point that it can dock to.
 	dockingPointsToDraw: Array<string> = [];
 
+	/// Docker children (or null)
 	children: Array<Widget> = [];
+
+	/// Convenience pointer to this widget's parent
 	parentWidget: Widget = null;
 
 	constructor(p: any, private s: any) {
@@ -63,10 +80,20 @@ class Widget {
 		this.children = _.range(0, 7).map(() => { return null; });
 	}
 
+	/**
+	 * Generates the expression corresponding to this widget and its subtree. **This function is a stub and will not
+	 * traverse the subtree.**
+	 *
+	 * @param format A string to specify the output format. Supports: latex, python.
+	 * @returns {string} The expression in the specified format.
+     */
 	getExpression(format: string): string {
 		return "";
 	}
 
+	/**
+	 * Paints the widget on the canvas.
+	 */
 	draw() {
 		var alpha = 255;
 		if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {
@@ -114,27 +141,44 @@ class Widget {
 		}
 	}
 
-	// It's the widget's responsibility to generate its own docking points
+	/**
+	 * Generates this widget's docking point positions.
+	 *
+	 * @param index The docking point's index
+	 * @returns {p5.Vector} The position of the requested docking point
+     */
 	defaultDockingPointPositionForIndex(index: number): p5.Vector {
 		// Yes, there is a minus sign over there, because the y-axis is flipped.
 		// Thank you, analog TV.
 		return this.p.createVector(Math.cos( (index/8) * 2*Math.PI), -Math.sin( (index/8) * 2*Math.PI)).mult(80);
 	}
 
-	// It'll be the widget's responsibility to position itself relative to its parent's docking point
+	/**
+	 * Docks this widget to its parent's docking point. This method is called by the parent when asked to set one of its
+	 * children.
+	 *
+	 * @param p The position of the parent's docking point, passed from the parent.
+     */
 	dock(p: p5.Vector) {
 		var np = p5.Vector.add(this.position, p5.Vector.mult(p, this.scale));
 		// FIXME Do the docking around the center of the bounding box instead of the basepoint (or something along those lines)
 		this.moveBy(p5.Vector.sub(np, this.position));
 	}
 
-	// The RED one with the PURPLE-ish border
+	/**
+	 * This widget's tight bounding box. This is used for the cursor hit testing.
+	 *
+	 * @returns {Rect} The bounding box
+     */
 	boundingBox(): Rect {
 		// These numbers are hardcoded, but I suppose that's OK for now...
 		return new Rect(this.position.x-this.scale*50, this.position.y-this.scale*50, this.scale * 100, this.scale * 100);
 	}
 
-	// The GREEN one
+	/**
+	 * This widget's bounding box expanded to include the docking points. This is used for the "external" hit testing
+	 * involved in the docking process.
+	 */
 	dockingBoundingBox(): Rect {
 		var box = this.boundingBox();
 		var left = box.x, right = box.x + box.w, top = box.y, bottom = box.y + box.h;
@@ -149,7 +193,11 @@ class Widget {
 
 	// ************ //
 
-	// The BLUE one
+	/**
+	 * The bounding box including this widget's whole subtree.
+	 *
+	 * @returns {Rect}
+     */
 	subtreeBoundingBox(): Rect {
 		var [box, ...subtree] = _.map(this.getAllChildren(), (c) => { return c.boundingBox() });
 		var left = box.x, right = box.x + box.w, top = box.y, bottom = box.y + box.h;
@@ -162,12 +210,19 @@ class Widget {
 		return new Rect(left, top, right-left, bottom-top);
 	}
 
+	/**
+	 * Removes this widget from its parent. Also, shakes it.
+	 */
 	removeFromParent() {
 		this.parentWidget.removeChild(this);
-
 		this.shakeIt();
 	}
 
+	/**
+	 * Convenience method for removeFromParent().
+	 *
+	 * @param child The child being removed, just in case you need it.
+     */
 	removeChild(child: Widget) {
 		this.children = this.children.map( (e: Widget) => {
 			if(e != null && child.id == e.id) {
@@ -181,6 +236,13 @@ class Widget {
 		this.shakeIt();
 	}
 
+	/**
+	 * Hit test. Detects whether a point is hitting the tight bounding box of this widget. This is used for dragging.
+	 * Propagates down to children.
+	 *
+	 * @param p The hit point
+	 * @returns {Widget} This widget, if hit; null if not.
+     */
 	hit(p: p5.Vector): Widget {
 		var w = null;
 		_.each(this.children, child => {
@@ -197,6 +259,13 @@ class Widget {
 		}
 	}
 
+	/**
+	 * External hit test. Detects whether a point is hitting the bounding box containing the docking points. This is
+	 * used for reducing the amount of docking points to be hit-tested. May be going soon.
+	 *
+	 * @param p The hit point
+	 * @returns {Widget} This widget, if hit; null if not.
+     */
 	externalHit(p: p5.Vector): Widget {
 		var w = null;
 		_.each(this.children, child => {
@@ -213,6 +282,12 @@ class Widget {
 		}
 	}
 
+	/**
+	 * Hit test for this widget's docking points.
+	 *
+	 * @param p The hit point
+	 * @returns {number} The hit docking point's index, or -1 if no docking point was hit.
+     */
 	dockingPointsHit(p: p5.Vector): number {
 		// This highlight thing is incredibly fishy, and yet it works...
 		this.highlightDockingPoint = -1;
@@ -225,6 +300,9 @@ class Widget {
 		return this.highlightDockingPoint;
 	}
 
+	/**
+	 * @returns {*[]} A flattened array of all this widget's children, including this widget as the first element.
+     */
 	getAllChildren(): Array<Widget> {
 		var subtree: Array<Widget> = [];
 		subtree.push(this);
@@ -236,6 +314,11 @@ class Widget {
 		return _.flatten(subtree);
 	}
 
+	/**
+	 * Moves this widget by a specified amount, and all its children along with it.
+	 *
+	 * @param d The distance to move by.
+     */
 	moveBy(d: p5.Vector) {
 		this.position.add(d);
 		this.children.forEach( child => {
@@ -245,6 +328,12 @@ class Widget {
 		});
 	}
 
+	/**
+	 * Sets the types of docking points to be drawn while a widget is moving. Based on the currently moving widget's
+	 * docksTo property.
+	 *
+	 * @param points An array of docking point types (strings).
+     */
 	setDockingPointsToDraw(points: Array<string>) {
 		this.children.forEach( child => {
 			if(child != null) {
@@ -254,6 +343,9 @@ class Widget {
 		this.dockingPointsToDraw = points;
 	}
 
+	/**
+	 * Resets the types of docking point types to be drawn. Typically called after the user drops a widget somewhere.
+	 */
 	clearDockingPointsToDraw() {
 		this.children.forEach( child => {
 			if(child != null) {
@@ -263,6 +355,12 @@ class Widget {
 		this.dockingPointsToDraw = [];
 	}
 
+	/**
+	 * Set a child to this widget at the given docking point index.
+	 *
+	 * @param index The index of the docking point for this child.
+	 * @param child The child widget to dock.
+     */
 	setChild(index: number, child: Widget) {
 		// Add the child to this symbol,
 		this.children[index] = child;
@@ -272,10 +370,10 @@ class Widget {
 		this.shakeIt();
 	}
 
-
-
-	// Shakes up the subtree to make everything look nicer.
-	//   (the only way this could be better is if I was writing this in Swift)
+	/**
+	 * Shakes up the subtree to make everything look nicer.
+	 * (*The only way this could be better is if I was writing this in Swift.*)
+	 */
 	shakeIt() {
 		if(this.parentWidget == null) {
 			this._shakeIt();
@@ -284,6 +382,12 @@ class Widget {
 		}
 	}
 
+	/**
+	 * Internal companion method to shakeIt(). This is the one that actually does the work, and the one that should be
+	 * overridden by children of this class.
+	 *
+	 * @private
+     */
 	_shakeIt() {
 		// Go through the children
 		this.children.forEach((child: Widget, index: number) => {
