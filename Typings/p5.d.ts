@@ -84,6 +84,7 @@ declare module p5 {
         lerp(x: any, y?: any, z?: any, amt?: any): void;
         dist(v1: Vector, v2?: Vector): number;
         add(v1: Vector, v2?: Vector): Vector;
+        sub(v1: Vector, v2: Vector): Vector;
         mult(v: Vector, n: number): Vector;
         mult(n: number);
     }
