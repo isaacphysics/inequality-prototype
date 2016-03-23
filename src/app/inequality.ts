@@ -62,7 +62,7 @@ class MySketch {
 		this.p.createCanvas(800, 600);
 
 		this.symbols = _.map([[100, 400, "M"], [300, 200, "x"], [500, 150, "i"], [700, 250, "j"]], (p) => {
-			var s = new Symbol(this.p, this, p[2]);
+			var s = new Symbol(this.p, this, <string>p[2]);
 			s.position = this.p.createVector(p[0], p[1]);
 			return s;
 		});

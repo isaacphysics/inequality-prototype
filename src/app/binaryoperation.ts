@@ -1,4 +1,5 @@
-import { Widget, Rect } from './widget.ts'
+import { Widget, Rect } from './widget.ts';
+import { Symbol } from './symbol.ts';
 
 export
 class BinaryOperation extends Widget {

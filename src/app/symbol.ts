@@ -16,7 +16,7 @@ class Symbol extends Widget {
 		return p;
 	}
 
-	constructor(p:any, private s:any, private letter:string) {
+	constructor(p:any, protected s:any, private letter:string) {
 		super(p, s);
 
 		this.dockingPoints = _.map(_.range(0, 3), (n) => {
