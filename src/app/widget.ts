@@ -65,7 +65,7 @@ class Widget {
 	/// Convenience pointer to this widget's parent
 	parentWidget: Widget = null;
 
-	constructor(p: any, private s: any) {
+	constructor(p: any, protected s: any) {
 		// Take a new unique id for this symbol
 		this.id = ++wId;
 		// This is weird but necessary: this.p will be the sketch function
