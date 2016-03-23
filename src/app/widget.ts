@@ -238,7 +238,7 @@ class Widget {
 	 * @returns {Widget} This widget, if hit; null if not.
      */
 	hit(p: p5.Vector): Widget {
-		var w = null;
+		var w: Widget = null;
 		_.some(this.children, child => {
 			if(child != null) {
 				w = child.hit(p);
