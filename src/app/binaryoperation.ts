@@ -53,9 +53,7 @@ class BinaryOperation extends Widget {
         return expression;
     }
 
-    /**
-     * Paints the widget on the canvas.
-     */
+    /** Paints the widget on the canvas. */
     draw() {
         super.draw();
 

@@ -25,44 +25,42 @@ class Rect {
 	}
 }
 
-/**
- * A base class for anything visible, draggable, and dockable.
- */
+/** A base class for anything visible, draggable, and dockable. */
 export
 class Widget {
-	/// p5 instance, I guess?
+	/** p5 instance, I guess? */
 	protected p: any;
-	/// Unique ID
+	/** Unique ID */
 	id: number = -1;
 
-	/// Scaling factor for this widget (affected by where a widget is docked, typically)
+	/** Scaling factor for this widget (affected by where a widget is docked, typically) */
 	scale: number = 1.0;
 
-	/// Position of this widget
+	/** Position of this widget */
 	position: p5.Vector;
 
-	/// Points to which other widgets can dock
+	/** Points to which other widgets can dock */
 	dockingPoints: Array<p5.Vector> = [];
 
-	/// An array of scales that a certain docking point imposes to its subtree
+	/** An array of scales that a certain docking point imposes to its subtree */
 	dockingPointScales: Array<number> = [];
 
-	/// An array of the types of this widget's docking point
+	/** An array of the types of this widget's docking point */
 	dockingPointTypes: Array<string> = [];
 
-	/// An array of the types of docking points that this widget can dock to
+	/** An array of the types of docking points that this widget can dock to */
 	docksTo: Array<string> = [];
 
-	/// Cosmetic parameter to highlight the docking point currently being hovered
+	/** Cosmetic parameter to highlight the docking point currently being hovered */
 	highlightDockingPoint: number = -1;
 
-	/// An array set by the currently moving symbol that tells us to only draw the docking point that it can dock to.
+	/** An array set by the currently moving symbol that tells us to only draw the docking point that it can dock to. */
 	dockingPointsToDraw: Array<string> = [];
 
-	/// Docker children (or null)
+	/** Docker children (or null) */
 	children: Array<Widget> = [];
 
-	/// Convenience pointer to this widget's parent
+	/** Convenience pointer to this widget's parent */
 	parentWidget: Widget = null;
 
 	constructor(p: any, protected s: any) {
@@ -91,9 +89,7 @@ class Widget {
 		return "";
 	}
 
-	/**
-	 * Paints the widget on the canvas.
-	 */
+	/** Paints the widget on the canvas. */
 	draw() {
 		var alpha = 255;
 		if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {
@@ -210,9 +206,7 @@ class Widget {
 		return new Rect(left, top, right-left, bottom-top);
 	}
 
-	/**
-	 * Removes this widget from its parent. Also, shakes it.
-	 */
+	/** Removes this widget from its parent. Also, shakes it. */
 	removeFromParent() {
 		this.parentWidget.removeChild(this);
 		this.shakeIt();
@@ -300,9 +294,7 @@ class Widget {
 		return this.highlightDockingPoint;
 	}
 
-	/**
-	 * @returns {*[]} A flattened array of all this widget's children, including this widget as the first element.
-     */
+	/** @returns {*[]} A flattened array of all this widget's children, including this widget as the first element. */
 	getAllChildren(): Array<Widget> {
 		var subtree: Array<Widget> = [];
 		subtree.push(this);
@@ -343,9 +335,7 @@ class Widget {
 		this.dockingPointsToDraw = points;
 	}
 
-	/**
-	 * Resets the types of docking point types to be drawn. Typically called after the user drops a widget somewhere.
-	 */
+	/** Resets the types of docking point types to be drawn. Typically called after the user drops a widget somewhere. */
 	clearDockingPointsToDraw() {
 		this.children.forEach( child => {
 			if(child != null) {
