@@ -137,17 +137,17 @@ class MySketch {
 			this.prevTouch.y = this.p.touchY;
 
 			// Check if we are moving close to a docking point, and highlight it even more.
-			_.each(_.flatten(_.map(this.symbols, symbol => {
+			_.some(_.flatten(_.map(this.symbols, symbol => {
 				return symbol.getAllChildren();
 			})), (symbol: Widget) => {
 				symbol.highlightDockingPoint = -1;
 				// This is the point where the mouse/touch is.
 				var touchPoint = this.p.createVector(this.p.touchX, this.p.touchY);
-				// Let's find a symbol that is close enough for us to be close to its docking points
-				var hitSymbol = symbol.externalHit(touchPoint);
-				if(hitSymbol != null && hitSymbol.id != this.movingSymbol.id) {
-					// If we found a viable candidate, let's see if we hit any of its docking points
-					hitSymbol.dockingPointsHit(touchPoint);
+				// This is less refined than doing the proximity detection thing, but works much better (#4)
+				if(symbol != null && symbol.id != this.movingSymbol.id) {
+					if(symbol.dockingPointsHit(touchPoint) > -1) {
+						return true;
+					}
 				}
 			});
 		}
@@ -166,17 +166,17 @@ class MySketch {
 			_.each(_.flatten(_.map(this.symbols, symbol => {
 				return symbol.getAllChildren();
 			})), (symbol: Widget) => {
+				symbol.highlightDockingPoint = -1;
 				// This is the point where the mouse/touch is.
-				var hitPoint = this.p.createVector(this.p.touchX, this.p.touchY);
-				// Let's find a symbol that is close enough for us to be close to its docking points
-				var hitSymbol = symbol.externalHit(hitPoint);
-				if(hitSymbol != null && hitSymbol.id != formerlyMovingSymbol.id) {
-					var index = hitSymbol.dockingPointsHit(hitPoint);
+				var touchPoint = this.p.createVector(this.p.touchX, this.p.touchY);
+				// This is less refined than doing the proximity detection thing, but works much better (#4)
+				if(symbol != null && symbol.id != formerlyMovingSymbol.id) {
+					var index = symbol.dockingPointsHit(touchPoint);
 					if(index > -1) {
 						// Clear highlighted docking points
-						hitSymbol.highlightDockingPoint = -1;
+						symbol.highlightDockingPoint = -1;
 						// Actually dock the symbol
-						hitSymbol.setChild(index, formerlyMovingSymbol);
+						symbol.setChild(index, formerlyMovingSymbol);
 						// Finally, this symbol was among the roots while moving, so if we docked it somewhere,
 						// let's remove it from the roots.
 						shouldRemoveFromRoots = true;
