@@ -10,7 +10,7 @@ class Symbol extends Widget {
 	 *
 	 * @returns {Vector} The position to which a Symbol is meant to be docked from.
 	 */
-	get dockingPoint():p5.Vector {
+	get dockingPoint(): p5.Vector {
 		var box = this.s.font.textBounds("x", 0, 1000, this.scale * this.s.baseFontSize);
 		var p = this.p.createVector(this.position.x, this.position.y - box.h / 2);
 		return p;
@@ -37,7 +37,7 @@ class Symbol extends Widget {
 	 * @param format A string to specify the output format. Supports: latex, python, subscript.
 	 * @returns {string} The expression in the specified format.
 	 */
-	getExpression(format:string):string {
+	getExpression(format: string): string {
 		var expression = "";
 		if (format == "latex") {
 			expression = this.letter;
@@ -119,7 +119,7 @@ class Symbol extends Widget {
 	 * @param index The docking point's index
 	 * @returns {p5.Vector} The position of the requested docking point
 	 */
-	defaultDockingPointPositionForIndex(index:number):p5.Vector {
+	defaultDockingPointPositionForIndex(index: number): p5.Vector {
 		var box = this.boundingBox();
 		var descent = this.position.y - (box.y + box.h);
 		switch (index) {
@@ -138,7 +138,7 @@ class Symbol extends Widget {
 	 *
 	 * @param p The position of the parent's docking point, passed from the parent.
 	 */
-	dock(p:p5.Vector) {
+	dock(p: p5.Vector) {
 		if (this.parentWidget instanceof Symbol) {
 			var np:p5.Vector = p5.Vector.sub(p, this.dockingPoint);
 			this.moveBy(np);
@@ -153,7 +153,7 @@ class Symbol extends Widget {
 	 *
 	 * @returns {Rect} The bounding box
 	 */
-	boundingBox():Rect {
+	boundingBox(): Rect {
 		var box = this.s.font.textBounds(this.letter || "e", 0, 1000, this.scale * this.s.baseFontSize);
 		this.bounds = new Rect(-box.w / 2, box.y - 1000, box.w, box.h);
 		return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
