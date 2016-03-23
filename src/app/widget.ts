@@ -239,9 +239,10 @@ class Widget {
      */
 	hit(p: p5.Vector): Widget {
 		var w = null;
-		_.each(this.children, child => {
+		_.some(this.children, child => {
 			if(child != null) {
 				w = child.hit(p);
+				return w != null;
 			}
 		});
 		if(w != null) {
@@ -261,10 +262,11 @@ class Widget {
 	 * @returns {Widget} This widget, if hit; null if not.
      */
 	externalHit(p: p5.Vector): Widget {
-		var w = null;
-		_.each(this.children, child => {
+		var w: Widget = null;
+		_.some(this.children, child => {
 			if(child != null) {
 				w = child.externalHit(p);
+				return w != null;
 			}
 		});
 		if(w != null) {
