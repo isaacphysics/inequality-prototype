@@ -11,8 +11,8 @@ class BinaryOperation extends Widget {
      * @returns {Vector} The position to which a Symbol is meant to be docked from.
      */
     get dockingPoint(): p5.Vector {
-        var box = this.s.font_up.textBounds("x", 0, 1000, this.scale * this.s.baseFontSize*0.8);
-        var p = this.p.createVector(this.position.x, this.position.y - box.h/2);
+        // var box = this.s.font_up.textBounds("+", 0, 1000, this.scale * this.s.baseFontSize*0.8);
+        var p = this.p.createVector(this.position.x, this.position.y - this.s.xBox.h/2);
         return p;
     }
 
