@@ -124,8 +124,8 @@ class BinaryOperation extends Widget {
                 break;
             }
             case '−': {
-                var box = this.s.font_up.textBounds(this.operation, 0, 1000, this.scale * this.s.baseFontSize*0.8);
-                this.bounds = new Rect(-box.w/2, box.y-1000 - box.h/2, box.w, box.h*1.5);
+                var box = this.s.font_up.textBounds('+', 0, 1000, this.scale * this.s.baseFontSize*0.8);
+                this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
                 return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
                 break;
             }
