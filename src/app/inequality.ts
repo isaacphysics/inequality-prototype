@@ -39,7 +39,8 @@ class MySketch {
 	mBox: Rect = null;
 
 	baseFontSize = 120;
-	font: p5.Font = null;
+	font_it: p5.Font = null;
+	font_up: p5.Font = null;
 
 	constructor(private p) {
 		this.p.preload = this.preload;
@@ -51,12 +52,13 @@ class MySketch {
 	}
 
 	preload = () => {
-		this.font = this.p.loadFont("/assets/STIXGeneralItalic.otf");
+		this.font_it = this.p.loadFont("/assets/STIXGeneral-Italic.otf");
+		this.font_up = this.p.loadFont("/assets/STIXGeneral-Regular.otf");
 	};
 
 	setup = () => {
-		this.xBox = this.font.textBounds("x", 0, 1000, this.baseFontSize);
-		this.mBox = this.font.textBounds("M", 0, 1000, this.baseFontSize);
+		this.xBox = this.font_it.textBounds("x", 0, 1000, this.baseFontSize);
+		this.mBox = this.font_it.textBounds("M", 0, 1000, this.baseFontSize);
 
 		this.symbols = [];
 		this.p.createCanvas(800, 600);
@@ -70,7 +72,8 @@ class MySketch {
 		plus.position = this.p.createVector(200, 500);
 		this.symbols.push(plus);
 
-		var minus = new BinaryOperation(this.p, this, "-");
+		// CAREFUL This is a Unicode MINUS sign "−" (U+2212)
+		var minus = new BinaryOperation(this.p, this, "−");
 		minus.position = this.p.createVector(600, 500);
 		this.symbols.push(minus);
 

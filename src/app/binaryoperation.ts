@@ -11,7 +11,7 @@ class BinaryOperation extends Widget {
      * @returns {Vector} The position to which a Symbol is meant to be docked from.
      */
     get dockingPoint(): p5.Vector {
-        var box = this.s.font.textBounds("x", 0, 1000, this.scale * this.s.baseFontSize);
+        var box = this.s.font_up.textBounds("x", 0, 1000, this.scale * this.s.baseFontSize*0.8);
         var p = this.p.createVector(this.position.x, this.position.y - box.h/2);
         return p;
     }
@@ -59,8 +59,8 @@ class BinaryOperation extends Widget {
 
         this.p.fill(0).strokeWeight(0).noStroke();
 
-        this.p.textFont(this.s.font)
-            .textSize(this.s.baseFontSize * this.scale)
+        this.p.textFont(this.s.font_up)
+            .textSize(this.s.baseFontSize*0.8 * this.scale)
             .textAlign(this.p.CENTER, this.p.BASELINE)
             .text(this.operation, this.position.x, this.position.y);
         this.p.strokeWeight(1);
@@ -116,7 +116,21 @@ class BinaryOperation extends Widget {
      * @returns {Rect} The bounding box
      */
     boundingBox(): Rect {
-        var box = this.s.font.textBounds(this.operation || "+", 0, 1000, this.scale * this.s.baseFontSize);
+        switch(this.operation) {
+            case '+': {
+                var box = this.s.font_up.textBounds(this.operation, 0, 1000, this.scale * this.s.baseFontSize*0.8);
+                this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
+                return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
+                break;
+            }
+            case '−': {
+                var box = this.s.font_up.textBounds(this.operation, 0, 1000, this.scale * this.s.baseFontSize*0.8);
+                this.bounds = new Rect(-box.w/2, box.y-1000 - box.h/2, box.w, box.h*1.5);
+                return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
+                break;
+            }
+        }
+        var box = this.s.font_up.textBounds(this.operation || "+", 0, 1000, this.scale * this.s.baseFontSize*0.8);
         this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
         return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
     }
