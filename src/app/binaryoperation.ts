@@ -11,7 +11,6 @@ class BinaryOperation extends Widget {
      * @returns {Vector} The position to which a Symbol is meant to be docked from.
      */
     get dockingPoint(): p5.Vector {
-        // var box = this.s.font_up.textBounds("+", 0, 1000, this.scale * this.s.baseFontSize*0.8);
         var p = this.p.createVector(this.position.x, this.position.y - this.s.xBox.h/2);
         return p;
     }
@@ -19,7 +18,7 @@ class BinaryOperation extends Widget {
     constructor(p: any, protected s: any, private operation: string) {
         super(p, s);
 
-        this.dockingPoints = _.map(_.range(0, 1), (n) => { return this.defaultDockingPointPositionForIndex(n); });
+        this.dockingPoints = _.map(_.range(0), (n) => { return this.defaultDockingPointPositionForIndex(n); });
         this.dockingPointScales = [1.0];
         this.dockingPointTypes = ['symbol'];
         this.docksTo = ['operator'];
