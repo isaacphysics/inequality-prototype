@@ -104,6 +104,7 @@ class Widget {
 				var point = this.dockingPoints[index];
 				if(this.dockingPointsToDraw.indexOf(type) > -1 || window.location.hash === "#debug") {
 					this.p.stroke(0, 127, 255, alpha * 0.5);
+					this.p.strokeWeight(1);
 					if(index == this.highlightDockingPoint) {
 						this.p.fill(127, 192, 255);
 					} else {

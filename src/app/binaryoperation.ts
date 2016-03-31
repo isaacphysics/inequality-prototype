@@ -15,7 +15,7 @@ class BinaryOperation extends Widget {
         return p;
     }
 
-    constructor(p: any, protected s: any, private operation: string) {
+    constructor(p: any, protected s: any, protected operation: string) {
         super(p, s);
 
         this.dockingPoints = _.map(_.range(0, 1), (n) => { return this.defaultDockingPointPositionForIndex(n); });

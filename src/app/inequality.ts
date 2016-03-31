@@ -23,7 +23,8 @@ limitations under the License.
 
 import { Widget, Rect } from './widget.ts'
 import { Symbol } from './symbol.ts'
-import { BinaryOperation } from "./binaryoperation";
+import { BinaryOperation } from './binaryoperation';
+import { Fraction } from './fraction.ts';
 
 // This is where the fun starts
 
@@ -77,6 +78,9 @@ class MySketch {
 		minus.position = this.p.createVector(600, 500);
 		this.symbols.push(minus);
 
+		var fraction = new Fraction(this.p, this);
+		fraction.position = this.p.createVector(400, 500);
+		this.symbols.push(fraction);
 
 		this.prevTouch = this.p.createVector(0,0);
 	};

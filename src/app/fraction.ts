@@ -1,20 +1,30 @@
 import { Widget, Rect } from './widget.ts';
 import { Symbol } from './symbol.ts';
+import {BinaryOperation} from "./binaryoperation";
 
 export
 class Fraction extends Widget {
     bounds: Rect = null;
 
-    // TODO the dockingPoint thing
+    /**
+     * There's a thing with the baseline and all that... this sort-of fixes it.
+     *
+     * @returns {Vector} The position to which a Symbol is meant to be docked from.
+     */
+    get dockingPoint(): p5.Vector {
+        var p = this.p.createVector(this.position.x - this.boundingBox().w/2, this.position.y);
+        return p;
+    }
 
     constructor(p: any, protected s: any) {
         super(p, s);
 
-        this.dockingPoints = _.map(_.range(0, 1, 2), (n) => { return this.defaultDockingPointPositionForIndex(n); });
-        this.dockingPointScales = [1.0];
-        this.dockingPointTypes = ['symbol'];
-        this.docksTo = ['operator'];
-        this.children = [null];
+        this.dockingPoints = _.map(_.range(0, 3), (n) => { return this.defaultDockingPointPositionForIndex(n); });
+        console.log(this.dockingPoints);
+        this.dockingPointScales = [1.0, 1.0, 1.0];
+        this.dockingPointTypes = ['symbol', 'symbol', 'symbol'];
+        this.docksTo = ['operator', 'symbol'];
+        this.children = [null, null, null];
     }
 
     /**
@@ -33,8 +43,15 @@ class Fraction extends Widget {
                 expression += "\frac{" + this.children[1].getExpression(format) + "}{" + this.children[2].getExpression(format) + "} " + this.children[0].getExpression(format);
             }
         } else if(format == "python") {
-            if (this.children[0] != null) {
-                expression += "((" + this.children[1].getExpression(format) + ")/(" + this.children[2].getExpression(format) + ")) * (" + this.children[0].getExpression(format) + ")";
+            if (this.children[1] != null && this.children[2]) {
+                expression += "((" + this.children[1].getExpression(format) + ")/(" + this.children[2].getExpression(format) + "))";
+                if(this.children[0] != null) {
+                    if(this.children[0] instanceof BinaryOperation) {
+                        expression += this.children[0].getExpression(format);
+                    } else {
+                        expression += " * " + this.children[0].getExpression(format);
+                    }
+                }
             }
         } else if(format == "subscript") {
             if (this.children[0] != null) {
@@ -48,13 +65,12 @@ class Fraction extends Widget {
     draw() {
         super.draw();
 
-        /*
-        this.p.fill(0).strokeWeight(0).noStroke();
+        this.p.noFill(0).strokeWeight(6*this.scale).stroke(0);
 
-        this.p.textFont(this.s.font_up)
-            .textSize(this.s.baseFontSize*0.8 * this.scale)
-            .textAlign(this.p.CENTER, this.p.BASELINE)
-            .text(this.operation, this.position.x, this.position.y);
+        var box = this.boundingBox();
+        var y = box.y + box.h/2 + 2*this.scale;
+        this.p.line(box.x, y, box.x+box.w, y);
+
         this.p.strokeWeight(1);
 
         if(window.location.hash === "#debug") {
@@ -66,7 +82,6 @@ class Fraction extends Widget {
             this.p.ellipse(this.dockingPoint.x, this.dockingPoint.y, 10, 10);
             this.p.ellipse(this.dockingPoint.x, this.dockingPoint.y, 5, 5);
         }
-        */
     }
 
     /**
@@ -83,11 +98,11 @@ class Fraction extends Widget {
         var box = this.boundingBox();
         switch(index) {
             case 0:
-                return this.p.createVector(box.w/2 + this.s.mBox.w/4, -this.s.xBox.h/2);
+                return this.p.createVector(box.w/2 + 25, 0);
             case 1:
-                return;
+                return this.p.createVector(0, -(box.h/2 + 25));
             case 2:
-                return;
+                return this.p.createVector(0, box.h/2 + 25);
         }
     }
 
@@ -114,8 +129,11 @@ class Fraction extends Widget {
      * @returns {Rect} The bounding box
      */
     boundingBox(): Rect {
-        var box = this.s.font_up.textBounds(this.operation || "+", 0, 1000, this.scale * this.s.baseFontSize*0.8);
-        this.bounds = new Rect(-box.w/2, box.y-1000, box.w, box.h);
+        var box = this.s.font_up.textBounds("+", 0, 1000, this.scale * this.s.baseFontSize*0.8);
+        var w1:number = this.children[1] != null ? this.children[1].subtreeBoundingBox().w : 0.0;
+        var w2:number = this.children[2] != null ? this.children[2].subtreeBoundingBox().w : 0.0;
+        var w = Math.max(100, Math.max(w1, w2));
+        this.bounds = new Rect(-w/2, -box.h/2, w, box.h);
         return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
     }
 
@@ -126,17 +144,33 @@ class Fraction extends Widget {
      * @private
      */
     _shakeIt() {
+        _.each([1,2,1,2,1], (index) => {
+            if (this.children[index] != null) {
+                var child = this.children[index];
+                child.scale = this.scale * this.dockingPointScales[index];
+                this.dockingPoints[index].x = -this.boundingBox().w / 2 + 50;
+                var newPosition = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[index], this.scale));
+                child.dock(newPosition);
+                child._shakeIt();
+            } else {
+                this.dockingPoints[index] = this.defaultDockingPointPositionForIndex(index);
+            }
+        });
         if(this.children[0] != null) {
             var child = this.children[0];
             child.scale = this.scale * this.dockingPointScales[0];
             var newPosition = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[0], this.scale));
             child.dock(newPosition);
             child._shakeIt();
+        } else {
+            this.dockingPoints[0] = this.defaultDockingPointPositionForIndex(0);
         }
 
-        // Haters gonna hate, hate, hate, hate, hate...
-        if(this.children[0] != null) {
-            this.children[0]._shakeIt();
-        }
+        _.each([1,2,0], (index) => {
+            // Haters gonna hate, hate, hate, hate, hate...
+            if (this.children[index] != null) {
+                this.children[index]._shakeIt();
+            }
+        });
     }
 }
