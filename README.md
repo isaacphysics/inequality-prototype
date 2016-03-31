@@ -11,7 +11,7 @@ Dependencies are managed by `npm`. Once you cloned the repository, simply do
 The application is purely client-side, and the files can be served by any plain
 HTTP file server, such as
 
-    python -m SimpleHTTPServer 8000
+    npm start
 
 Now browse to Inequality at [localhost:8000](http://localhost:8000/)
 
@@ -33,6 +33,15 @@ delete the `dist` directory.
 There will be some. I promise.
 
 # Status
+
+**[31.03.2016]** Better docking is here. Binary operations (plus, minus) are
+here and working. Fractions are coming.
+
+Please use the issue tracker to file any bugs or requests. Also, feel free to
+tackle bugs and requests, and commit, or fire up a pull request if you can't
+directly commit.
+
+---
 
 **[09.02.2016]** Docking sort of works, but in a weird way. It could be a lot
 more sophisticated. For example
