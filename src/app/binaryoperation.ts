@@ -99,13 +99,8 @@ class BinaryOperation extends Widget {
      */
     dock(p: p5.Vector) {
         // INFO: http://tinyurl.com/o39ju6e
-        if(this.parentWidget instanceof Symbol) {
-            var np: p5.Vector = p5.Vector.sub(p, this.dockingPoint);
-            this.moveBy(np);
-        } else {
-            var np: p5.Vector = p5.Vector.sub(p, this.dockingPoint);
-            this.moveBy(np);
-        }
+        var np: p5.Vector = p5.Vector.sub(p, this.dockingPoint);
+        this.moveBy(np);
     }
 
 
@@ -141,6 +136,7 @@ class BinaryOperation extends Widget {
      * @private
      */
     _shakeIt() {
+
         if(this.children[0] != null) {
             var child = this.children[0];
             child.scale = this.scale * this.dockingPointScales[0];

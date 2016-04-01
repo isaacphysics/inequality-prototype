@@ -139,13 +139,8 @@ class Symbol extends Widget {
 	 * @param p The position of the parent's docking point, passed from the parent.
 	 */
 	dock(p: p5.Vector) {
-		if (this.parentWidget instanceof Symbol) {
-			var np:p5.Vector = p5.Vector.sub(p, this.dockingPoint);
-			this.moveBy(np);
-		} else {
-			var np:p5.Vector = p5.Vector.sub(p, this.dockingPoint);
-			this.moveBy(np);
-		}
+		var np:p5.Vector = p5.Vector.sub(p, this.dockingPoint);
+		this.moveBy(np);
 	}
 
 	/**
@@ -154,7 +149,7 @@ class Symbol extends Widget {
 	 * @returns {Rect} The bounding box
 	 */
 	boundingBox(): Rect {
-		var box = this.s.font_it.textBounds(this.letter || "e", 0, 1000, this.scale * this.s.baseFontSize);
+		var box = this.s.font_it.textBounds(this.letter || "x", 0, 1000, this.scale * this.s.baseFontSize);
 		this.bounds = new Rect(-box.w / 2, box.y - 1000, box.w, box.h);
 		return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
 	}

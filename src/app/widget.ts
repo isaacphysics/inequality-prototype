@@ -27,7 +27,7 @@ class Rect {
 
 /** A base class for anything visible, draggable, and dockable. */
 export
-class Widget {
+abstract class Widget {
 	/** p5 instance, I guess? */
 	protected p: any;
 	/** Unique ID */
@@ -131,10 +131,6 @@ class Widget {
 			var subtreeBox = this.subtreeBoundingBox();
 			this.p.stroke(0, 0, 255, 64);
 			this.p.rect(subtreeBox.x, subtreeBox.y, subtreeBox.w, subtreeBox.h);
-
-			var dockingBox = this.dockingBoundingBox();
-			this.p.stroke(0, 127, 0, 64);
-			this.p.rect(dockingBox.x, dockingBox.y, dockingBox.w, dockingBox.h);
 		}
 	}
 
@@ -170,22 +166,6 @@ class Widget {
 	boundingBox(): Rect {
 		// These numbers are hardcoded, but I suppose that's OK for now...
 		return new Rect(this.position.x-this.scale*50, this.position.y-this.scale*50, this.scale * 100, this.scale * 100);
-	}
-
-	/**
-	 * This widget's bounding box expanded to include the docking points. This is used for the "external" hit testing
-	 * involved in the docking process.
-	 */
-	dockingBoundingBox(): Rect {
-		var box = this.boundingBox();
-		var left = box.x, right = box.x + box.w, top = box.y, bottom = box.y + box.h;
-		_.each(this.dockingPoints, (point) => {
-			if(left > this.position.x + point.x - 10*this.scale) { left = this.position.x + this.scale*(point.x - 10); }
-			if(top > this.position.y + point.y - 10*this.scale) { top = this.position.y + this.scale*(point.y - 10); }
-			if(right < this.position.x + this.scale*(point.x + 10)) { right = this.position.x + this.scale*(point.x + 10); }
-			if(bottom < this.position.y + this.scale*(point.y + 10)) { bottom = this.position.y + this.scale*(point.y + 10); }
-		});
-		return new Rect(left, top, right-left, bottom-top);
 	}
 
 	// ************ //
@@ -249,30 +229,6 @@ class Widget {
 		if(w != null) {
 			return w;
 		} else if(this.boundingBox().contains(p)) {
-			return this;
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * External hit test. Detects whether a point is hitting the bounding box containing the docking points. This is
-	 * used for reducing the amount of docking points to be hit-tested. May be going soon.
-	 *
-	 * @param p The hit point
-	 * @returns {Widget} This widget, if hit; null if not.
-     */
-	externalHit(p: p5.Vector): Widget {
-		var w: Widget = null;
-		_.some(this.children, child => {
-			if(child != null) {
-				w = child.externalHit(p);
-				return w != null;
-			}
-		});
-		if(w != null) {
-			return w;
-		} else if(this.dockingBoundingBox().contains(p)) {
 			return this;
 		} else {
 			return null;
@@ -381,25 +337,5 @@ class Widget {
 	 *
 	 * @private
      */
-	_shakeIt() {
-		// Go through the children
-		this.children.forEach((child: Widget, index: number) => {
-			if(child != null) { // If the child is not null, move it around
-				// Scale the child appropriately,
-				child.scale = this.scale * this.dockingPointScales[index];
-				// move the corresponding docking point somewhere nice,
-				var thisBox = this.boundingBox();
-				var childBox = child.boundingBox();
-				var gap = (thisBox.x + thisBox.w) - (childBox.x);
-				this.dockingPoints[index] = p5.Vector.add(this.defaultDockingPointPositionForIndex(index), this.p.createVector(gap, 0));
-				// and move the child along with it.
-				child.dock(p5.Vector.add(this.position, this.dockingPoints[index]));
-				// Haters gonna hate.
-				child._shakeIt();
-			} else {
-				// If the child is null, this is a docking point, thus restore it to its "natural" position
-				this.dockingPoints[index] = this.defaultDockingPointPositionForIndex(index);
-			}
-		});
-	}
+	abstract _shakeIt();
 }

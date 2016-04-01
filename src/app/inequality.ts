@@ -163,27 +163,35 @@ class MySketch {
 	touchEnded = () => {
 		if(this.movingSymbol != null) {
 			// When touches end, mark the symbol as not moving.
-			var formerlyMovingSymbol = this.movingSymbol;
-			this.movingSymbol = null;
 			this.prevTouch = null;
 
 			var shouldRemoveFromRoots = false;
 
-			// I don't like having to do this again, but hey...
-			_.each(_.flatten(_.map(this.symbols, symbol => {
+			var allSymbols = _.flatten(_.map(this.symbols, symbol => {
 				return symbol.getAllChildren();
-			})), (symbol: Widget) => {
+			}));
+
+			var movingChildren = this.movingSymbol.getAllChildren();
+			var symbolsToTest = _.reject(allSymbols, symbol => {
+				return _.contains(movingChildren, symbol);
+			});
+
+			console.log(allSymbols.length, symbolsToTest.length);
+
+			// I don't like having to do this again, but hey...
+			_.each(symbolsToTest, (symbol: Widget) => {
+
 				symbol.highlightDockingPoint = -1;
 				// This is the point where the mouse/touch is.
 				var touchPoint = this.p.createVector(this.p.touchX, this.p.touchY);
 				// This is less refined than doing the proximity detection thing, but works much better (#4)
-				if(symbol != null && symbol.id != formerlyMovingSymbol.id) {
+				if(symbol != null && symbol != this.movingSymbol) {
 					var index = symbol.dockingPointsHit(touchPoint);
 					if(index > -1) {
 						// Clear highlighted docking points
 						symbol.highlightDockingPoint = -1;
 						// Actually dock the symbol
-						symbol.setChild(index, formerlyMovingSymbol);
+						symbol.setChild(index, this.movingSymbol);
 						// Finally, this symbol was among the roots while moving, so if we docked it somewhere,
 						// let's remove it from the roots.
 						shouldRemoveFromRoots = true;
@@ -195,18 +203,21 @@ class MySketch {
 			// Doing the remove-from-roots thing here to avoid messing up the array of roots.
 			if(shouldRemoveFromRoots) {
 				this.symbols = _.reject(this.symbols, (e) => {
-					return e.id == formerlyMovingSymbol.id;
+					return e == this.movingSymbol;
 				});
 			}
 
 			// Reset rendering of docking points
-			_.each(this.symbols, symbol => {
+			_.each(allSymbols, symbol => {
 				symbol.clearDockingPointsToDraw();
+				symbol.highlightDockingPoint = -1;
 			});
 		}
 		_.each(this.symbols, symbol => {
 			console.log(symbol.id + " -> " + symbol.getExpression("python"));
 		});
+
+		this.movingSymbol = null;
 	};
 }
 

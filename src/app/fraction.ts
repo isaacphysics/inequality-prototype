@@ -114,13 +114,8 @@ class Fraction extends Widget {
      */
     dock(p: p5.Vector) {
         // TODO This might actually end up being the one that needs the index
-        if(this.parentWidget instanceof Symbol) {
-            var np: p5.Vector = p5.Vector.sub(p, this.dockingPoint);
-            this.moveBy(np);
-        } else {
-            var np: p5.Vector = p5.Vector.sub(p, this.dockingPoint);
-            this.moveBy(np);
-        }
+        var np: p5.Vector = p5.Vector.sub(p, this.dockingPoint);
+        this.moveBy(np);
     }
 
     /**
@@ -145,6 +140,7 @@ class Fraction extends Widget {
      */
     _shakeIt() {
         _.each([1,2,1,2,1], (index) => {
+
             if (this.children[index] != null) {
                 var child = this.children[index];
                 child.scale = this.scale * this.dockingPointScales[index];
