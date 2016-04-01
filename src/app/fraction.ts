@@ -1,10 +1,12 @@
 import { Widget, Rect } from './widget.ts';
 import { Symbol } from './symbol.ts';
 import {BinaryOperation} from "./binaryoperation";
+import { DockingPoint } from "./DockingPoint.ts";
 
 export
 class Fraction extends Widget {
-    bounds: Rect = null;
+    protected s: any;
+    private width: number;
 
     /**
      * There's a thing with the baseline and all that... this sort-of fixes it.
@@ -12,20 +14,26 @@ class Fraction extends Widget {
      * @returns {Vector} The position to which a Symbol is meant to be docked from.
      */
     get dockingPoint(): p5.Vector {
-        var p = this.p.createVector(this.position.x - this.boundingBox().w/2, this.position.y);
+        var p = this.p.createVector(-this.boundingBox().w/2, 0);
         return p;
     }
 
-    constructor(p: any, protected s: any) {
+    constructor(p: any, s: any) {
+        this.s = s;
+        this.width = 100;
         super(p, s);
 
-        this.dockingPoints = _.map(_.range(0, 3), (n) => { return this.defaultDockingPointPositionForIndex(n); });
-        console.log(this.dockingPoints);
-        this.dockingPointScales = [1.0, 1.0, 1.0];
-        this.dockingPointTypes = ['symbol', 'symbol', 'symbol'];
         this.docksTo = ['operator', 'symbol'];
-        this.children = [null, null, null];
     }
+
+    generateDockingPoints() {
+        var box = this.boundingBox();
+
+        this.dockingPoints["right"] = new DockingPoint(this, this.p.createVector(box.w/2 + 25, 0), 1, "symbol");
+        this.dockingPoints["numerator"] = new DockingPoint(this, this.p.createVector(0, -(box.h/2 + 25)), 1, "symbol");
+        this.dockingPoints["denominator"] = new DockingPoint(this, this.p.createVector(0, box.h/2 + 25), 1, "symbol");
+    }
+
 
     /**
      * Generates the expression corresponding to this widget and its subtree.
@@ -37,7 +45,7 @@ class Fraction extends Widget {
      * @returns {string} The expression in the specified format.
      */
     getExpression(format: string): string {
-        var expression = "";
+        var expression = "";/*
         if(format == "latex") {
             if (this.children[0] != null) {
                 expression += "\frac{" + this.children[1].getExpression(format) + "}{" + this.children[2].getExpression(format) + "} " + this.children[0].getExpression(format);
@@ -57,65 +65,29 @@ class Fraction extends Widget {
             if (this.children[0] != null) {
                 expression += "[NOPE:" + this.id + "]";
             }
-        }
+        }*/
         return expression;
     }
 
     /** Paints the widget on the canvas. */
-    draw() {
-        super.draw();
+    _draw() {
 
         this.p.noFill(0).strokeWeight(6*this.scale).stroke(0);
 
         var box = this.boundingBox();
-        var y = box.y + box.h/2 + 2*this.scale;
-        this.p.line(box.x, y, box.x+box.w, y);
+        this.p.line(-box.w/2, 0, box.w/2, 0);
 
         this.p.strokeWeight(1);
 
         if(window.location.hash === "#debug") {
             this.p.stroke(255, 0, 0).noFill();
-            this.p.ellipse(this.position.x, this.position.y, 10, 10);
-            this.p.ellipse(this.position.x, this.position.y, 5, 5);
+            this.p.ellipse(0, 0, 10, 10);
+            this.p.ellipse(0, 0, 5, 5);
 
             this.p.stroke(0, 0, 255).noFill();
             this.p.ellipse(this.dockingPoint.x, this.dockingPoint.y, 10, 10);
             this.p.ellipse(this.dockingPoint.x, this.dockingPoint.y, 5, 5);
         }
-    }
-
-    /**
-     * Generates this widget's docking point positions. A Fraction has three docking point:
-     *
-     * - 0: Symbol
-     * - 1: Symbol (numerator)
-     * - 2: Symbol (denominator)
-     *
-     * @param index The docking point's index
-     * @returns {p5.Vector} The position of the requested docking point
-     */
-    defaultDockingPointPositionForIndex(index: number): p5.Vector {
-        var box = this.boundingBox();
-        switch(index) {
-            case 0:
-                return this.p.createVector(box.w/2 + 25, 0);
-            case 1:
-                return this.p.createVector(0, -(box.h/2 + 25));
-            case 2:
-                return this.p.createVector(0, box.h/2 + 25);
-        }
-    }
-
-    /**
-     * Docks this widget to its parent's docking point. This method is called by the parent when asked to set one of its
-     * children.
-     *
-     * @param p The position of the parent's docking point, passed from the parent.
-     */
-    dock(p: p5.Vector) {
-        // TODO This might actually end up being the one that needs the index
-        var np: p5.Vector = p5.Vector.sub(p, this.dockingPoint);
-        this.moveBy(np);
     }
 
     /**
@@ -125,11 +97,7 @@ class Fraction extends Widget {
      */
     boundingBox(): Rect {
         var box = this.s.font_up.textBounds("+", 0, 1000, this.scale * this.s.baseFontSize*0.8);
-        var w1:number = this.children[1] != null ? this.children[1].subtreeBoundingBox().w : 0.0;
-        var w2:number = this.children[2] != null ? this.children[2].subtreeBoundingBox().w : 0.0;
-        var w = Math.max(100, Math.max(w1, w2));
-        this.bounds = new Rect(-w/2, -box.h/2, w, box.h);
-        return new Rect(this.position.x + this.bounds.x, this.position.y + this.bounds.y, this.bounds.w, this.bounds.h);
+        return new Rect(-this.width/2, -box.h/2, this.width, box.h);
     }
 
     /**
@@ -139,34 +107,54 @@ class Fraction extends Widget {
      * @private
      */
     _shakeIt() {
-        _.each([1,2,1,2,1], (index) => {
 
-            if (this.children[index] != null) {
-                var child = this.children[index];
-                child.scale = this.scale * this.dockingPointScales[index];
-                this.dockingPoints[index].x = -this.boundingBox().w / 2 + 50;
-                var newPosition = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[index], this.scale));
-                child.dock(newPosition);
-                child._shakeIt();
-            } else {
-                this.dockingPoints[index] = this.defaultDockingPointPositionForIndex(index);
+        // Work out the size of all our children
+        var boxes: {[key:string]: Rect} = {};
+        var subtreeBoxes: {[key:string]: Rect} = {};
+
+        _.each(this.dockingPoints, (dockingPoint, dockingPointName) => {
+            if (dockingPoint.child != null) {
+                dockingPoint.child.scale = this.scale * dockingPoint.scale;
+                dockingPoint.child._shakeIt();
+                boxes[dockingPointName] = dockingPoint.child.boundingBox(); // NB: This only looks at the direct child!
+                subtreeBoxes[dockingPointName] = dockingPoint.child.subtreeBoundingBox();
             }
         });
-        if(this.children[0] != null) {
-            var child = this.children[0];
-            child.scale = this.scale * this.dockingPointScales[0];
-            var newPosition = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPoints[0], this.scale));
-            child.dock(newPosition);
-            child._shakeIt();
-        } else {
-            this.dockingPoints[0] = this.defaultDockingPointPositionForIndex(0);
+
+        // Calculate our own geometry
+
+        this.width = Math.max(100, _.max(_.pluck(_.values(_.pick(subtreeBoxes, ["numerator", "denominator"])), "w")));
+
+        // Set position of all our children.
+
+        if ("numerator" in boxes) {
+            var p = this.dockingPoints["numerator"].child.position;
+            var fullNumeratorWidth = subtreeBoxes["numerator"].w;
+            var numeratorRootWidth = boxes["numerator"].w;
+            var numeratorFullDescent = subtreeBoxes["numerator"].y + subtreeBoxes["numerator"].h;
+
+            p.x = numeratorRootWidth/2 - fullNumeratorWidth/2;
+            p.y = -this.scale * this.s.mBox.w / 4 - numeratorFullDescent;
         }
 
-        _.each([1,2,0], (index) => {
-            // Haters gonna hate, hate, hate, hate, hate...
-            if (this.children[index] != null) {
-                this.children[index]._shakeIt();
-            }
-        });
+        if ("denominator" in boxes) {
+            var p = this.dockingPoints["denominator"].child.position;
+            var fullDenominatorWidth = subtreeBoxes["denominator"].w;
+            var denominatorRootWidth = boxes["denominator"].w;
+            var denominatorFullAscent = subtreeBoxes["denominator"].y;
+
+            p.x = denominatorRootWidth/2 - fullDenominatorWidth/2;
+            p.y = this.scale * this.s.mBox.w / 4 - denominatorFullAscent;
+        }
+
+        if ("right" in boxes) {
+            var p = this.dockingPoints["right"].child.position;
+            p.y = boxes["right"].h/2;
+            p.x = this.width / 2 + boxes["right"].w / 2 + this.scale*this.s.mBox.w/4; // TODO: Tweak this with kerning.
+        }
+
+
+        // TODO: Recalculate positions of docking points.
+
     }
 }

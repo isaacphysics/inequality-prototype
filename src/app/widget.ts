@@ -1,3 +1,6 @@
+import { DockingPoint } from './DockingPoint.ts';
+import Dictionary = _.Dictionary;
+
 // This is meant to be a static global thingie for uniquely identifying widgets/symbols
 // This may very well be a relic of my C++ multi-threaded past, but it served me well so far...
 export var wId = 0;
@@ -16,6 +19,12 @@ class Rect {
 		this.h = h;
 	}
 
+    setOrigin(newOrigin: p5.Vector) {
+        this.x = this.x - newOrigin.x;
+        this.y = this.y - newOrigin.y;
+        return this;
+    }
+
 	contains(p: p5.Vector): boolean {
 		return (p.x >= this.x) && (p.y >= this.y) && (p.x <= this.x+this.w) && (p.y <= this.y+this.h);
 	}
@@ -23,6 +32,8 @@ class Rect {
 	get center() {
 		return new p5.Vector(this.x + this.w/2, this.y + this.h/2);
 	}
+
+
 }
 
 /** A base class for anything visible, draggable, and dockable. */
@@ -40,25 +51,10 @@ abstract class Widget {
 	position: p5.Vector;
 
 	/** Points to which other widgets can dock */
-	dockingPoints: Array<p5.Vector> = [];
-
-	/** An array of scales that a certain docking point imposes to its subtree */
-	dockingPointScales: Array<number> = [];
-
-	/** An array of the types of this widget's docking point */
-	dockingPointTypes: Array<string> = [];
+	dockingPoints: {[key:string]: DockingPoint; } = {};
 
 	/** An array of the types of docking points that this widget can dock to */
 	docksTo: Array<string> = [];
-
-	/** Cosmetic parameter to highlight the docking point currently being hovered */
-	highlightDockingPoint: number = -1;
-
-	/** An array set by the currently moving symbol that tells us to only draw the docking point that it can dock to. */
-	dockingPointsToDraw: Array<string> = [];
-
-	/** Docker children (or null) */
-	children: Array<Widget> = [];
 
 	/** Convenience pointer to this widget's parent */
 	parentWidget: Widget = null;
@@ -71,12 +67,10 @@ abstract class Widget {
 		// Default position is [0, 0]
 		this.position = p.createVector(0, 0);
 
-		this.dockingPoints = _.map(_.range(0, 7), (n) => { return this.defaultDockingPointPositionForIndex(n); });
-		this.dockingPointScales = _.range(0, 7).map(() => { return 1.0; });
-		this.dockingPointTypes = _.range(0, 7).map(() => { return null; });
-		this.docksTo = [];
-		this.children = _.range(0, 7).map(() => { return null; });
+		this.generateDockingPoints();
 	}
+
+    generateDockingPoints() {};
 
 	/**
 	 * Generates the expression corresponding to this widget and its subtree. **This function is a stub and will not
@@ -91,60 +85,51 @@ abstract class Widget {
 
 	/** Paints the widget on the canvas. */
 	draw() {
+
+        this.p.translate(this.position.x, this.position.y);
 		var alpha = 255;
 		if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {
 			alpha = 127;
 		}
 
-		// This has to be done twice
-		_.each(this.children, (child, index) => {
-			if(child == null) {
-				// There is no child to paint, let's paint an empty docking point
-				var type = this.dockingPointTypes[index];
-				var point = this.dockingPoints[index];
-				if(this.dockingPointsToDraw.indexOf(type) > -1 || window.location.hash === "#debug") {
-					this.p.stroke(0, 127, 255, alpha * 0.5);
-					this.p.strokeWeight(1);
-					if(index == this.highlightDockingPoint) {
-						this.p.fill(127, 192, 255);
-					} else {
-						this.p.noFill();
-					}
-					this.p.ellipse(this.position.x + this.scale * point.x, this.position.y + this.scale * point.y, this.scale * 20, this.scale * 20);
-				}
-			}
-		});
-		// Curses, you painter's algorithm!
-		_.each(this.children, child => {
-			if(child != null) {
-				// There is a child, so let's just draw it...
-				child.draw();
-			}
-		});
+        _.each(this.dockingPoints, (dockingPoint, key) => {
+            if (dockingPoint.child) {
+                dockingPoint.child.draw();
+            } else {
+                // There is no child to paint, let's paint an empty docking point
+
+                var drawThisOne = this.s.visibleDockingPointTypes.indexOf(dockingPoint.type) > -1;
+                var highlightThisOne = this.s.activeDockingPoint == dockingPoint;
+
+                if (drawThisOne || window.location.hash === "#debug") {
+                    this.p.stroke(0, 127, 255, alpha * 0.5);
+                    this.p.strokeWeight(1);
+                    if(highlightThisOne) {
+                        this.p.fill(127, 192, 255);
+                    } else {
+                        this.p.noFill();
+                    }
+                    this.p.ellipse(this.scale * dockingPoint.position.x, this.scale * dockingPoint.position.y, this.scale * 20, this.scale * 20);
+                }
+            }
+        });
 
 		this.p.noFill();
 		if(window.location.hash === "#debug") {
 			var box = this.boundingBox();
 			this.p.stroke(255, 0, 0, 64);
-			// this.p.rect(box.x, box.y, box.w, box.h);
+			//this.p.rect(box.x, box.y, box.w, box.h);
 
 			var subtreeBox = this.subtreeBoundingBox();
 			this.p.stroke(0, 0, 255, 64);
 			this.p.rect(subtreeBox.x, subtreeBox.y, subtreeBox.w, subtreeBox.h);
 		}
+
+        this._draw();
+        this.p.translate(-this.position.x, -this.position.y);
 	}
 
-	/**
-	 * Generates this widget's docking point positions.
-	 *
-	 * @param index The docking point's index
-	 * @returns {p5.Vector} The position of the requested docking point
-     */
-	defaultDockingPointPositionForIndex(index: number): p5.Vector {
-		// Yes, there is a minus sign over there, because the y-axis is flipped.
-		// Thank you, analog TV.
-		return this.p.createVector(Math.cos( (index/8) * 2*Math.PI), -Math.sin( (index/8) * 2*Math.PI)).mult(80);
-	}
+    abstract _draw();
 
 	/**
 	 * Docks this widget to its parent's docking point. This method is called by the parent when asked to set one of its
@@ -152,21 +137,14 @@ abstract class Widget {
 	 *
 	 * @param p The position of the parent's docking point, passed from the parent.
      */
-	dock(p: p5.Vector) {
-		var np = p5.Vector.add(this.position, p5.Vector.mult(p, this.scale));
-		// FIXME Do the docking around the center of the bounding box instead of the basepoint (or something along those lines)
-		this.moveBy(p5.Vector.sub(np, this.position));
-	}
+	//abstract dock(p: p5.Vector);
 
 	/**
 	 * This widget's tight bounding box. This is used for the cursor hit testing.
 	 *
 	 * @returns {Rect} The bounding box
      */
-	boundingBox(): Rect {
-		// These numbers are hardcoded, but I suppose that's OK for now...
-		return new Rect(this.position.x-this.scale*50, this.position.y-this.scale*50, this.scale * 100, this.scale * 100);
-	}
+	abstract boundingBox(): Rect;
 
 	// ************ //
 
@@ -176,39 +154,41 @@ abstract class Widget {
 	 * @returns {Rect}
      */
 	subtreeBoundingBox(): Rect {
-		var [box, ...subtree] = _.map(this.getAllChildren(), (c) => { return c.boundingBox() });
-		var left = box.x, right = box.x + box.w, top = box.y, bottom = box.y + box.h;
-		_.each(subtree, (c) => {
+
+        var box = this.boundingBox();
+		var subtree = _.map(this.getChildren(), c => {
+            var b = c.subtreeBoundingBox();
+            b.x += c.position.x;
+            b.y += c.position.y;
+            return b;
+        });
+
+		var left = box.x;
+        var right = box.x + box.w;
+        var top = box.y;
+        var bottom = box.y + box.h;
+
+		_.each(subtree, c => {
 			if(left > c.x) { left = c.x; }
 			if(top > c.y) { top = c.y; }
 			if(right < c.x + c.w) { right = c.x + c.w; }
 			if(bottom < c.y + c.h) { bottom = c.y + c.h; }
 		});
+
 		return new Rect(left, top, right-left, bottom-top);
 	}
 
 	/** Removes this widget from its parent. Also, shakes it. */
 	removeFromParent() {
-		this.parentWidget.removeChild(this);
-		this.shakeIt();
-	}
-
-	/**
-	 * Convenience method for removeFromParent().
-	 *
-	 * @param child The child being removed, just in case you need it.
-     */
-	removeChild(child: Widget) {
-		this.children = this.children.map( (e: Widget) => {
-			if(e != null && child.id == e.id) {
-				return null;
-			} else {
-				return e;
-			}
-		});
-		child.parentWidget = null;
-
-		this.shakeIt();
+        var oldParent = this.parentWidget;
+        _.each(this.parentWidget.dockingPoints, (dockingPoint) => {
+            if (dockingPoint.child == this) {
+                dockingPoint.child = null;
+                this.parentWidget = null;
+            }
+        });
+        this.shakeIt(); // Our size may have changed. Shake.
+        oldParent.shakeIt(); // Our old parent should update. Shake.
 	}
 
 	/**
@@ -220,15 +200,15 @@ abstract class Widget {
      */
 	hit(p: p5.Vector): Widget {
 		var w: Widget = null;
-		_.some(this.children, child => {
-			if(child != null) {
-				w = child.hit(p);
+		_.some(this.dockingPoints, dockingPoint => {
+			if(dockingPoint.child != null) {
+				w = dockingPoint.child.hit(p5.Vector.sub(p, this.position));
 				return w != null;
 			}
 		});
 		if(w != null) {
 			return w;
-		} else if(this.boundingBox().contains(p)) {
+		} else if(this.boundingBox().contains(p5.Vector.sub(p, this.position))) {
 			return this;
 		} else {
 			return null;
@@ -241,83 +221,38 @@ abstract class Widget {
 	 * @param p The hit point
 	 * @returns {number} The hit docking point's index, or -1 if no docking point was hit.
      */
-	dockingPointsHit(p: p5.Vector): number {
-		// This highlight thing is incredibly fishy, and yet it works...
-		this.highlightDockingPoint = -1;
-		_.each(this.dockingPoints, (e, i) => {
-			var dp = p5.Vector.add(p5.Vector.mult(e, this.scale), this.position);
-			if(p5.Vector.dist(p, dp) < 10) {
-				this.highlightDockingPoint = i;
-			}
-		});
-		return this.highlightDockingPoint;
+	dockingPointsHit(p: p5.Vector): DockingPoint {
+        var q = p5.Vector.sub(p, this.position);
+
+        var hitPoint:DockingPoint = null;
+        _.some(this.getChildren(), child => {
+            hitPoint = child.dockingPointsHit(q);
+            return hitPoint != null;
+        });
+
+        if (!hitPoint) {
+            // This highlight thing is incredibly fishy, and yet it works...
+            _.each(this.dockingPoints, (point, name) => {
+                var dp = p5.Vector.mult(point.position, this.scale);
+                if(p5.Vector.dist(q, dp) < 10) {
+                    hitPoint = point;
+                }
+            });
+        }
+		return hitPoint;
 	}
 
-	/** @returns {*[]} A flattened array of all this widget's children, including this widget as the first element. */
-	getAllChildren(): Array<Widget> {
-		var subtree: Array<Widget> = [];
-		subtree.push(this);
-		this.children.forEach( c => {
-			if(c != null) {
-				subtree = subtree.concat(c.getAllChildren());
-			}
-		});
-		return _.flatten(subtree);
-	}
+    getChildren(): Array<Widget> {
+        return _.compact(_.pluck(_.values(this.dockingPoints), "child"));
+    }
 
-	/**
-	 * Moves this widget by a specified amount, and all its children along with it.
-	 *
-	 * @param d The distance to move by.
-     */
-	moveBy(d: p5.Vector) {
-		this.position.add(d);
-		this.children.forEach( child => {
-			if(child != null) {
-				child.moveBy(d);
-			}
-		});
-	}
-
-	/**
-	 * Sets the types of docking points to be drawn while a widget is moving. Based on the currently moving widget's
-	 * docksTo property.
-	 *
-	 * @param points An array of docking point types (strings).
-     */
-	setDockingPointsToDraw(points: Array<string>) {
-		this.children.forEach( child => {
-			if(child != null) {
-				child.setDockingPointsToDraw(points);
-			}
-		});
-		this.dockingPointsToDraw = points;
-	}
-
-	/** Resets the types of docking point types to be drawn. Typically called after the user drops a widget somewhere. */
-	clearDockingPointsToDraw() {
-		this.children.forEach( child => {
-			if(child != null) {
-				child.setDockingPointsToDraw([]);
-			}
-		});
-		this.dockingPointsToDraw = [];
-	}
-
-	/**
-	 * Set a child to this widget at the given docking point index.
-	 *
-	 * @param index The index of the docking point for this child.
-	 * @param child The child widget to dock.
-     */
-	setChild(index: number, child: Widget) {
-		// Add the child to this symbol,
-		this.children[index] = child;
-		// set this symbol as the child's parent
-		child.parentWidget = this;
-		// snap the child into position
-		this.shakeIt();
-	}
+    getAbsolutePosition(): p5.Vector {
+        if (this.parentWidget) {
+            return p5.Vector.add(this.parentWidget.getAbsolutePosition(), this.position);
+        } else {
+            return this.position;
+        }
+    }
 
 	/**
 	 * Shakes up the subtree to make everything look nicer.

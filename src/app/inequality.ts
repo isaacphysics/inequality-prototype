@@ -25,6 +25,7 @@ import { Widget, Rect } from './widget.ts'
 import { Symbol } from './symbol.ts'
 import { BinaryOperation } from './binaryoperation';
 import { Fraction } from './fraction.ts';
+import { DockingPoint } from './DockingPoint.ts';
 
 // This is where the fun starts
 
@@ -42,6 +43,9 @@ class MySketch {
 	baseFontSize = 120;
 	font_it: p5.Font = null;
 	font_up: p5.Font = null;
+
+	visibleDockingPointTypes: Array<string> = [];
+	activeDockingPoint: DockingPoint = null;
 
 	constructor(private p) {
 		this.p.preload = this.preload;
@@ -111,6 +115,7 @@ class MySketch {
 				if(hitSymbol.parentWidget != null) {
 					this.symbols.push(hitSymbol);
 					hitSymbol.scale = 1.0;
+                    hitSymbol.position = hitSymbol.getAbsolutePosition();
 					hitSymbol.removeFromParent();
 				}
 
@@ -131,28 +136,27 @@ class MySketch {
 		}
 
 		// Tell the other symbols to show only these points. Achievement unlocked: Usability!
-		_.each(this.symbols, symbol => {
-			symbol.setDockingPointsToDraw(movingSymbolDocksTo);
-		});
+        this.visibleDockingPointTypes = movingSymbolDocksTo;
 	};
 
 	touchMoved = () => {
 		if(this.movingSymbol != null) {
 			var d = this.p.createVector(this.p.touchX - this.prevTouch.x, this.p.touchY - this.prevTouch.y);
-			this.movingSymbol.moveBy(d);
+			this.movingSymbol.position.add(d);
 			this.prevTouch.x = this.p.touchX;
 			this.prevTouch.y = this.p.touchY;
 
 			// Check if we are moving close to a docking point, and highlight it even more.
-			_.some(_.flatten(_.map(this.symbols, symbol => {
-				return symbol.getAllChildren();
-			})), (symbol: Widget) => {
-				symbol.highlightDockingPoint = -1;
+			_.some(this.symbols, (symbol: Widget) => {
+				this.activeDockingPoint = null;
+
 				// This is the point where the mouse/touch is.
 				var touchPoint = this.p.createVector(this.p.touchX, this.p.touchY);
 				// This is less refined than doing the proximity detection thing, but works much better (#4)
 				if(symbol != null && symbol.id != this.movingSymbol.id) {
-					if(symbol.dockingPointsHit(touchPoint) > -1) {
+					if (this.activeDockingPoint = symbol.dockingPointsHit(touchPoint)) {
+						// We have hit a docking point, short-circuit the rest of this loop, because we
+						// don't care if we hit another one.
 						return true;
 					}
 				}
@@ -165,59 +169,20 @@ class MySketch {
 			// When touches end, mark the symbol as not moving.
 			this.prevTouch = null;
 
-			var shouldRemoveFromRoots = false;
+			if (this.activeDockingPoint) {
+                this.symbols = _.without(this.symbols, this.movingSymbol);
 
-			var allSymbols = _.flatten(_.map(this.symbols, symbol => {
-				return symbol.getAllChildren();
-			}));
-
-			var movingChildren = this.movingSymbol.getAllChildren();
-			var symbolsToTest = _.reject(allSymbols, symbol => {
-				return _.contains(movingChildren, symbol);
-			});
-
-			console.log(allSymbols.length, symbolsToTest.length);
-
-			// I don't like having to do this again, but hey...
-			_.each(symbolsToTest, (symbol: Widget) => {
-
-				symbol.highlightDockingPoint = -1;
-				// This is the point where the mouse/touch is.
-				var touchPoint = this.p.createVector(this.p.touchX, this.p.touchY);
-				// This is less refined than doing the proximity detection thing, but works much better (#4)
-				if(symbol != null && symbol != this.movingSymbol) {
-					var index = symbol.dockingPointsHit(touchPoint);
-					if(index > -1) {
-						// Clear highlighted docking points
-						symbol.highlightDockingPoint = -1;
-						// Actually dock the symbol
-						symbol.setChild(index, this.movingSymbol);
-						// Finally, this symbol was among the roots while moving, so if we docked it somewhere,
-						// let's remove it from the roots.
-						shouldRemoveFromRoots = true;
-						//return true;
-					}
-				}
-			});
-
-			// Doing the remove-from-roots thing here to avoid messing up the array of roots.
-			if(shouldRemoveFromRoots) {
-				this.symbols = _.reject(this.symbols, (e) => {
-					return e == this.movingSymbol;
-				});
+				this.activeDockingPoint.child = this.movingSymbol;
 			}
 
-			// Reset rendering of docking points
-			_.each(allSymbols, symbol => {
-				symbol.clearDockingPointsToDraw();
-				symbol.highlightDockingPoint = -1;
-			});
 		}
 		_.each(this.symbols, symbol => {
 			console.log(symbol.id + " -> " + symbol.getExpression("python"));
 		});
 
 		this.movingSymbol = null;
+		this.activeDockingPoint = null;
+        this.visibleDockingPointTypes = [];
 	};
 }
 
