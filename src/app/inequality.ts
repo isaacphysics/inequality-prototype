@@ -169,12 +169,11 @@ class MySketch {
 			// When touches end, mark the symbol as not moving.
 			this.prevTouch = null;
 
-			if (this.activeDockingPoint) {
-                this.symbols = _.without(this.symbols, this.movingSymbol);
-
+			// Make sure we have an active docking point, and that the moving symbol can dock to it.
+			if (this.activeDockingPoint != null && this.movingSymbol.docksTo.indexOf(this.activeDockingPoint.type) > -1) {
+               	this.symbols = _.without(this.symbols, this.movingSymbol);
 				this.activeDockingPoint.child = this.movingSymbol;
 			}
-
 		}
 		_.each(this.symbols, symbol => {
 			console.log(symbol.id + " -> " + symbol.getExpression("python"));
