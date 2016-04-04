@@ -1,6 +1,5 @@
-import { Widget, Rect } from './widget.ts';
-import { Symbol } from './symbol.ts';
-import {BinaryOperation} from "./binaryoperation";
+import { Widget, Rect } from './Widget.ts';
+import {BinaryOperation} from "./BinaryOperation";
 import { DockingPoint } from "./DockingPoint.ts";
 
 export
@@ -77,7 +76,6 @@ class Fraction extends Widget {
 
     /** Paints the widget on the canvas. */
     _draw() {
-
         this.p.noFill(0).strokeWeight(6*this.scale).stroke(0);
 
         var box = this.boundingBox();
@@ -113,7 +111,6 @@ class Fraction extends Widget {
      * @private
      */
     _shakeIt() {
-
         // Work out the size of all our children
         var boxes: {[key:string]: Rect} = {};
         var subtreeBoxes: {[key:string]: Rect} = {};

@@ -21,10 +21,10 @@ limitations under the License.
 /* tslint:disable: no-unused-variable */
 /* tslint:disable: comment-format */
 
-import { Widget, Rect } from './widget.ts'
-import { Symbol } from './symbol.ts'
-import { BinaryOperation } from './binaryoperation';
-import { Fraction } from './fraction.ts';
+import { Widget, Rect } from './Widget.ts'
+import { Symbol } from './Symbol.ts'
+import { BinaryOperation } from './BinaryOperation';
+import { Fraction } from './Fraction.ts';
 import { DockingPoint } from './DockingPoint.ts';
 
 // This is where the fun starts

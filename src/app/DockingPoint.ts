@@ -1,4 +1,4 @@
-import { Widget } from './widget.ts';
+import { Widget } from './Widget.ts';
 
 /** A class to encapsulate all the info on docking points */
 export class DockingPoint {

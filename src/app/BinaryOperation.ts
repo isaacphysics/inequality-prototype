@@ -1,5 +1,5 @@
-import { Widget, Rect } from './widget.ts';
-import { Symbol } from './symbol.ts';
+import { Widget, Rect } from './Widget.ts';
+import { Symbol } from './Symbol.ts';
 import { DockingPoint } from "./DockingPoint.ts";
 
 export

@@ -1,5 +1,5 @@
-import { Widget, Rect } from './widget.ts'
-import {BinaryOperation} from "./binaryoperation";
+import { Widget, Rect } from './Widget.ts'
+import {BinaryOperation} from "./BinaryOperation";
 import { DockingPoint } from "./DockingPoint.ts";
 
 export
