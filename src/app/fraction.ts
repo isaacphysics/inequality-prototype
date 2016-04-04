@@ -26,6 +26,13 @@ class Fraction extends Widget {
         this.docksTo = ['operator', 'symbol'];
     }
 
+    /** Generates all the docking points in one go and stores them in this.dockingPoints.
+     * A Fraction has three docking point:
+     *
+     * - _right_: Binary operation (addition, subtraction), Symbol (multiplication)
+     * - _numerator_: Symbol
+     * - _denominator_: Symbol
+     */
     generateDockingPoints() {
         var box = this.boundingBox();
 
@@ -33,7 +40,6 @@ class Fraction extends Widget {
         this.dockingPoints["numerator"] = new DockingPoint(this, this.p.createVector(0, -(box.h/2 + 25)), 1, "symbol");
         this.dockingPoints["denominator"] = new DockingPoint(this, this.p.createVector(0, box.h/2 + 25), 1, "symbol");
     }
-
 
     /**
      * Generates the expression corresponding to this widget and its subtree.
@@ -45,27 +51,27 @@ class Fraction extends Widget {
      * @returns {string} The expression in the specified format.
      */
     getExpression(format: string): string {
-        var expression = "";/*
+        var expression = "";
         if(format == "latex") {
-            if (this.children[0] != null) {
-                expression += "\frac{" + this.children[1].getExpression(format) + "}{" + this.children[2].getExpression(format) + "} " + this.children[0].getExpression(format);
+            if (this.dockingPoints["right"].child != null) {
+                expression += "\frac{" + this.dockingPoints["numerator"].child.getExpression(format) + "}{" + this.dockingPoints["denominator"].child.getExpression(format) + "} " + this.dockingPoints["right"].child.getExpression(format);
             }
         } else if(format == "python") {
-            if (this.children[1] != null && this.children[2]) {
-                expression += "((" + this.children[1].getExpression(format) + ")/(" + this.children[2].getExpression(format) + "))";
-                if(this.children[0] != null) {
-                    if(this.children[0] instanceof BinaryOperation) {
-                        expression += this.children[0].getExpression(format);
+            if (this.dockingPoints["numerator"].child != null && this.dockingPoints["denominator"].child) {
+                expression += "((" + this.dockingPoints["numerator"].child.getExpression(format) + ")/(" + this.dockingPoints["denominator"].child.getExpression(format) + "))";
+                if(this.dockingPoints["right"].child != null) {
+                    if(this.dockingPoints["right"].child instanceof BinaryOperation) {
+                        expression += this.dockingPoints["right"].child.getExpression(format);
                     } else {
-                        expression += " * " + this.children[0].getExpression(format);
+                        expression += " * " + this.dockingPoints["right"].child.getExpression(format);
                     }
                 }
             }
         } else if(format == "subscript") {
-            if (this.children[0] != null) {
+            if (this.dockingPoints["right"].child != null) {
                 expression += "[NOPE:" + this.id + "]";
             }
-        }*/
+        }
         return expression;
     }
 
@@ -152,9 +158,5 @@ class Fraction extends Widget {
             p.y = boxes["right"].h/2;
             p.x = this.width / 2 + boxes["right"].w / 2 + this.scale*this.s.mBox.w/4; // TODO: Tweak this with kerning.
         }
-
-
-        // TODO: Recalculate positions of docking points.
-
     }
 }

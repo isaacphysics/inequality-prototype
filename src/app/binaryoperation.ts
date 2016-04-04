@@ -25,6 +25,12 @@ class BinaryOperation extends Widget {
         this.docksTo = ['operator'];
     }
 
+    /**
+     * Generates all the docking points in one go and stores them in this.dockingPoints.
+     * A Binary Operation has one docking point:
+     *
+      - _right_: Symbol
+     */
     generateDockingPoints() {
         var box = this.boundingBox();
         var descent = this.position.y - (box.y + box.h);
@@ -42,26 +48,25 @@ class BinaryOperation extends Widget {
      * @returns {string} The expression in the specified format.
      */
     getExpression(format: string): string {
-        var expression = "";/*
+        var expression = "";
         if(format == "latex") {
-            if (this.children[0] != null) {
-                expression += this.operation + "" + this.children[0].getExpression(format);
+            if (this.dockingPoints["right"].child != null) {
+                expression += this.operation + "" + this.dockingPoints["right"].child.getExpression(format);
             }
         } else if(format == "python") {
-            if (this.children[0] != null) {
-                expression += this.operation + "" + this.children[0].getExpression(format);
+            if (this.dockingPoints["right"].child != null) {
+                expression += this.operation + "" + this.dockingPoints["right"].child.getExpression(format);
             }
         } else if(format == "subscript") {
-            if (this.children[0] != null) {
-                expression += this.children[0].getExpression(format);
+            if (this.dockingPoints["right"].child != null) {
+                expression += this.dockingPoints["right"].child.getExpression(format);
             }
-        }*/
+        }
         return expression;
     }
 
     /** Paints the widget on the canvas. */
     _draw() {
-
         this.p.fill(0).strokeWeight(0).noStroke();
 
         this.p.textFont(this.s.font_up)
@@ -128,9 +133,5 @@ class BinaryOperation extends Widget {
             p.y = 0;
             p.x = box.w / 2 + boxes["right"].w / 2; // TODO: Tweak this with kerning.
         }
-
-
-        // TODO: Recalculate positions of docking points.
-
     }
 }

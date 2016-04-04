@@ -27,6 +27,14 @@ class Symbol extends Widget {
 		this.docksTo = ['symbol', 'operator', 'exponent', 'subscript'];
 	}
 
+	/**
+	 * Generates all the docking points in one go and stores them in this.dockingPoints.
+	 * A Symbol has three docking points:
+	 *
+	 * - _right_: Binary operation (addition, subtraction), Symbol (multiplication)
+	 * - _superscript_: Exponent
+	 * - _subscript_: Subscript (duh?)
+	 */
     generateDockingPoints() {
         var box = this.boundingBox();
         var descent = this.position.y - (box.y + box.h);
@@ -46,57 +54,56 @@ class Symbol extends Widget {
 	 * @returns {string} The expression in the specified format.
 	 */
 	getExpression(format: string): string {
-		var expression = "";/*
+		var expression = "";
 		if (format == "latex") {
 			expression = this.letter;
-			if (this.children[1] != null) {
-				expression += "^{" + this.children[1].getExpression(format) + "}";
+			if (this.dockingPoints["superscript"].child != null) {
+				expression += "^{" + this.dockingPoints["superscript"].child.getExpression(format) + "}";
 			}
-			if (this.children[2] != null) {
-				expression += "_{" + this.children[2].getExpression(format) + "}";
+			if (this.dockingPoints["subscript"].child != null) {
+				expression += "_{" + this.dockingPoints["subscript"].child.getExpression(format) + "}";
 			}
-			if (this.children[0] != null) {
-				if (this.children[0] instanceof BinaryOperation) {
-					expression += this.children[0].getExpression(format);
+			if (this.dockingPoints["right"].child != null) {
+				if (this.dockingPoints["right"].child instanceof BinaryOperation) {
+					expression += this.dockingPoints["right"].child.getExpression(format);
 				} else {
 					// WARNING This assumes it's a Symbol, hence produces a multiplication
-					expression += " " + this.children[0].getExpression(format);
+					expression += " " + this.dockingPoints["right"].child.getExpression(format);
 				}
 			}
 		} else if (format == "python") {
 			expression = "" + this.letter;
-			if (this.children[2] != null) {
-				expression += this.children[2].getExpression("subscript");
+			if (this.dockingPoints["subscript"].child != null) {
+				expression += this.dockingPoints["subscript"].child.getExpression("subscript");
 			}
-			if (this.children[1] != null) {
-				expression += "**(" + this.children[1].getExpression(format) + ")";
+			if (this.dockingPoints["superscript"].child != null) {
+				expression += "**(" + this.dockingPoints["superscript"].child.getExpression(format) + ")";
 			}
-			if (this.children[0] != null) {
-				if (this.children[0] instanceof BinaryOperation) {
-					expression += this.children[0].getExpression(format);
+			if (this.dockingPoints["right"].child != null) {
+				if (this.dockingPoints["right"].child instanceof BinaryOperation) {
+					expression += this.dockingPoints["right"].child.getExpression(format);
 				} else {
 					// WARNING This assumes it's a Symbol, hence produces a multiplication
-					expression += "*" + this.children[0].getExpression(format);
+					expression += "*" + this.dockingPoints["right"].child.getExpression(format);
 				}
 			}
 		} else if (format == "subscript") {
 			expression = "" + this.letter;
-			if (this.children[2] != null) {
-				expression += this.children[2].getExpression(format);
+			if (this.dockingPoints["subscript"].child != null) {
+				expression += this.dockingPoints["subscript"].child.getExpression(format);
 			}
-			if (this.children[1] != null) {
-				expression += this.children[1].getExpression(format);
+			if (this.dockingPoints["superscript"].child != null) {
+				expression += this.dockingPoints["superscript"].child.getExpression(format);
 			}
-			if (this.children[0] != null) {
-				expression += this.children[0].getExpression(format);
+			if (this.dockingPoints["right"].child != null) {
+				expression += this.dockingPoints["right"].child.getExpression(format);
 			}
-		}*/
+		}
 		return expression;
 	}
 
 	/** Paints the widget on the canvas. */
 	_draw() {
-
 		this.p.fill(0).strokeWeight(0).noStroke();
 
 		this.p.textFont(this.s.font_it)
@@ -117,17 +124,6 @@ class Symbol extends Widget {
 	}
 
 	/**
-	 * Docks this widget to its parent's docking point. This method is called by the parent when asked to set one of its
-	 * children. This may or may not behave differently depending on the parent.
-	 *
-	 * @param p The position of the parent's docking point, passed from the parent.
-	 *//*
-	dock(p: p5.Vector) {
-		var np:p5.Vector = p5.Vector.sub(p, this.dockingPoint);
-		this.moveBy(np);
-	}*/
-
-	/**
 	 * This widget's tight bounding box. This is used for the cursor hit testing.
 	 *
 	 * @returns {Rect} The bounding box
@@ -144,8 +140,6 @@ class Symbol extends Widget {
 	 * @private
 	 */
 	_shakeIt() {
-
-
         // Work out the size of all our children
         var boxes: {[key:string]: Rect} = {};
 
@@ -189,49 +183,5 @@ class Symbol extends Widget {
             p.y = 0;
             p.x = box.w / 2 + boxes["right"].w / 2 + widestSuperOrSubScript; // TODO: Tweak this with kerning.
         }
-
-
-        // TODO: Recalculate positions of docking points.
-/*
-		// Go through the children, first the (sub|super)scripts...
-		var right = this.position.x + this.scale * (this.defaultDockingPointPositionForIndex(0).x + 10);
-		var rightChanged = false;
-		_.each([1, 2], (index) => {
-			if (this.children[index] != null) {
-				var child = this.children[index];
-				child.scale = this.scale * this.dockingPointScales[index];
-				var newPosition = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPointPositions[index], this.scale));
-				child.dock(newPosition);
-				child._shakeIt();
-
-				var box = child.subtreeBoundingBox();
-				var boxRight = box.x + box.w;
-				if (boxRight > right) {
-					rightChanged = true;
-					right = boxRight + this.scale * 10;
-				}
-			} else {
-				this.dockingPointPositions[index] = this.defaultDockingPointPositionForIndex(index);
-			}
-		});
-		if (rightChanged) {
-			this.dockingPointPositions[0] = this.p.createVector(right - this.position.x - this.scale * 10, this.dockingPointPositions[0].y);
-		} else {
-			this.dockingPointPositions[0] = this.defaultDockingPointPositionForIndex(0);
-		}
-		if (this.children[0] != null) {
-			var child = this.children[0];
-			child.scale = this.scale * this.dockingPointScales[0];
-			var newPosition = p5.Vector.add(this.position, p5.Vector.mult(this.dockingPointPositions[0], this.scale));
-			child.dock(newPosition);
-			child._shakeIt();
-		}
-
-		_.each([1, 2, 0], (index) => {
-			// Haters gonna hate, hate, hate, hate, hate...
-			if (this.children[index] != null) {
-				this.children[index]._shakeIt();
-			}
-		});*/
 	}
 }

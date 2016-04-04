@@ -1,4 +1,6 @@
 import { Widget } from './widget.ts';
+
+/** A class to encapsulate all the info on docking points */
 export class DockingPoint {
 
     private _child: Widget = null;
@@ -7,6 +9,7 @@ export class DockingPoint {
 
     }
 
+    /** Sets a child Widget to this docking point properly (aka, also shakes it). */
     set child(child) {
         this._child = child;
         if (child) {
@@ -15,6 +18,7 @@ export class DockingPoint {
         }
     }
 
+    /** Gets this docking points' Widget. */
     get child() {
         return this._child;
     }

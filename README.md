@@ -34,6 +34,10 @@ There will be some. I promise.
 
 # Status
 
+**[04.04.2016]** General improvements and awesomeness happened over the
+weekend. Things might move a little bit more, but this should be a fairly more
+stable and efficient.
+
 **[31.03.2016]** Better docking is here. Binary operations (plus, minus) are
 here and working. Fractions are coming.
 

@@ -19,16 +19,30 @@ class Rect {
 		this.h = h;
 	}
 
+	/**
+	 * Re-positions this Rect with the TL corner in the new position
+	 *
+	 * @param newOrigin The new TL corner's position
+	 * @returns {Rect} This Rect post hoc.
+     */
     setOrigin(newOrigin: p5.Vector) {
         this.x = this.x - newOrigin.x;
         this.y = this.y - newOrigin.y;
         return this;
     }
 
+	/**
+	 * Checks whether this Rect contains point p in canvas coordinates.
+	 * @param p The point to be tested for containment.
+	 * @returns {boolean} Whether the point is contained or not.
+     */
 	contains(p: p5.Vector): boolean {
 		return (p.x >= this.x) && (p.y >= this.y) && (p.x <= this.x+this.w) && (p.y <= this.y+this.h);
 	}
 
+	/**
+	 * @returns {Vector} The centre of this Rect, in canvas coordinates.
+     */
 	get center() {
 		return new p5.Vector(this.x + this.w/2, this.y + this.h/2);
 	}
@@ -70,6 +84,7 @@ abstract class Widget {
 		this.generateDockingPoints();
 	}
 
+	/** Generates all the docking points in one go and stores them in this.dockingPoints. */
     generateDockingPoints() {};
 
 	/**
@@ -85,7 +100,6 @@ abstract class Widget {
 
 	/** Paints the widget on the canvas. */
 	draw() {
-
         this.p.translate(this.position.x, this.position.y);
 		var alpha = 255;
 		if(this.s.movingSymbol != null && this.id == this.s.movingSymbol.id) {
@@ -130,14 +144,6 @@ abstract class Widget {
 	}
 
     abstract _draw();
-
-	/**
-	 * Docks this widget to its parent's docking point. This method is called by the parent when asked to set one of its
-	 * children.
-	 *
-	 * @param p The position of the parent's docking point, passed from the parent.
-     */
-	//abstract dock(p: p5.Vector);
 
 	/**
 	 * This widget's tight bounding box. This is used for the cursor hit testing.
@@ -242,10 +248,16 @@ abstract class Widget {
 		return hitPoint;
 	}
 
+	/**
+	 * @returns {Widget[]} A flat array of the children of this widget, as widget objects
+     */
     getChildren(): Array<Widget> {
         return _.compact(_.pluck(_.values(this.dockingPoints), "child"));
     }
 
+	/**
+	 * @returns {Vector} The absolute position of this widget relative to the canvas.
+     */
     getAbsolutePosition(): p5.Vector {
         if (this.parentWidget) {
             return p5.Vector.add(this.parentWidget.getAbsolutePosition(), this.position);
