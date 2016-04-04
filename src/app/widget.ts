@@ -116,9 +116,10 @@ abstract class Widget {
                 var highlightThisOne = this.s.activeDockingPoint == dockingPoint;
 
                 if (drawThisOne || window.location.hash === "#debug") {
-                    this.p.stroke(0, 127, 255, alpha * 0.5);
+                    var ptAlpha = window.location.hash === "#debug" && !drawThisOne ? 40 : alpha * 0.5;
+                    this.p.stroke(0, 127, 255, ptAlpha);
                     this.p.strokeWeight(1);
-                    if(highlightThisOne) {
+                    if(highlightThisOne && drawThisOne) {
                         this.p.fill(127, 192, 255);
                     } else {
                         this.p.noFill();
