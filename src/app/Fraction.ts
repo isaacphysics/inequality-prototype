@@ -35,9 +35,9 @@ class Fraction extends Widget {
     generateDockingPoints() {
         var box = this.boundingBox();
 
-        this.dockingPoints["right"] = new DockingPoint(this, this.p.createVector(box.w/2 + 25, 0), 1, "symbol");
-        this.dockingPoints["numerator"] = new DockingPoint(this, this.p.createVector(0, -(box.h/2 + 25)), 1, "symbol");
-        this.dockingPoints["denominator"] = new DockingPoint(this, this.p.createVector(0, box.h/2 + 25), 1, "symbol");
+        this.dockingPoints["right"] = new DockingPoint(this, this.p.createVector(box.w/2 + 25, -box.h/2), 1, "symbol");
+        this.dockingPoints["numerator"] = new DockingPoint(this, this.p.createVector(0, -(box.h + 25)), 1, "symbol");
+        this.dockingPoints["denominator"] = new DockingPoint(this, this.p.createVector(0, 0 + 25), 1, "symbol");
     }
 
     /**
@@ -79,7 +79,7 @@ class Fraction extends Widget {
         this.p.noFill(0).strokeWeight(6*this.scale).stroke(0);
 
         var box = this.boundingBox();
-        this.p.line(-box.w/2, 0, box.w/2, 0);
+        this.p.line(-box.w/2, -box.h/2, box.w/2, -box.h/2);
 
         this.p.strokeWeight(1);
 
@@ -101,7 +101,7 @@ class Fraction extends Widget {
      */
     boundingBox(): Rect {
         var box = this.s.font_up.textBounds("+", 0, 1000, this.scale * this.s.baseFontSize*0.8);
-        return new Rect(-this.width/2, -box.h/2, this.width, box.h);
+        return new Rect(-this.width/2, -box.h, this.width, box.h);
     }
 
     /**
@@ -128,6 +128,7 @@ class Fraction extends Widget {
 
         this.width = Math.max(100, _.max(_.pluck(_.values(_.pick(subtreeBoxes, ["numerator", "denominator"])), "w")));
 
+        var bbox = this.boundingBox();
         // Set position of all our children.
 
         if ("numerator" in boxes) {
@@ -137,7 +138,7 @@ class Fraction extends Widget {
             var numeratorFullDescent = subtreeBoxes["numerator"].y + subtreeBoxes["numerator"].h;
 
             p.x = numeratorRootWidth/2 - fullNumeratorWidth/2;
-            p.y = -this.scale * this.s.mBox.w / 4 - numeratorFullDescent;
+            p.y = -bbox.h/2 - this.scale * this.s.mBox.w / 4 - numeratorFullDescent;
         }
 
         if ("denominator" in boxes) {
@@ -147,12 +148,12 @@ class Fraction extends Widget {
             var denominatorFullAscent = subtreeBoxes["denominator"].y;
 
             p.x = denominatorRootWidth/2 - fullDenominatorWidth/2;
-            p.y = this.scale * this.s.mBox.w / 4 - denominatorFullAscent;
+            p.y = -bbox.h / 2 + this.scale * this.s.mBox.w / 4 - denominatorFullAscent;
         }
 
         if ("right" in boxes) {
             var p = this.dockingPoints["right"].child.position;
-            p.y = boxes["right"].h/2;
+            p.y = 0;//(boxes["right"].h + boxes["right"].y);
             p.x = this.width / 2 + boxes["right"].w / 2 + this.scale*this.s.mBox.w/4; // TODO: Tweak this with kerning.
         }
     }
