@@ -7,6 +7,10 @@ class Fraction extends Widget {
     protected s: any;
     private width: number;
 
+    get typeAsString(): string {
+        return "Fraction";
+    }
+
     /**
      * There's a thing with the baseline and all that... this sort-of fixes it.
      *
@@ -52,11 +56,14 @@ class Fraction extends Widget {
     getExpression(format: string): string {
         var expression = "";
         if(format == "latex") {
-            if (this.dockingPoints["right"].child != null) {
-                expression += "\frac{" + this.dockingPoints["numerator"].child.getExpression(format) + "}{" + this.dockingPoints["denominator"].child.getExpression(format) + "} " + this.dockingPoints["right"].child.getExpression(format);
+            if (this.dockingPoints["numerator"].child != null && this.dockingPoints["denominator"].child != null) {
+                expression += "\frac{" + this.dockingPoints["numerator"].child.getExpression(format) + "}{" + this.dockingPoints["denominator"].child.getExpression(format) + "} ";
+                if(this.dockingPoints["right"].child != null) {
+                    expression += this.dockingPoints["right"].child.getExpression(format);
+                }
             }
         } else if(format == "python") {
-            if (this.dockingPoints["numerator"].child != null && this.dockingPoints["denominator"].child) {
+            if (this.dockingPoints["numerator"].child != null && this.dockingPoints["denominator"].child != null) {
                 expression += "((" + this.dockingPoints["numerator"].child.getExpression(format) + ")/(" + this.dockingPoints["denominator"].child.getExpression(format) + "))";
                 if(this.dockingPoints["right"].child != null) {
                     if(this.dockingPoints["right"].child instanceof BinaryOperation) {
@@ -72,6 +79,10 @@ class Fraction extends Widget {
             }
         }
         return expression;
+    }
+
+    properties(): Object {
+        return null;
     }
 
     /** Paints the widget on the canvas. */

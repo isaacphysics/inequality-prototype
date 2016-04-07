@@ -7,6 +7,10 @@ class BinaryOperation extends Widget {
     protected s: any;
     protected operation: string;
 
+    get typeAsString(): string {
+        return "BinaryOperation";
+    }
+
     /**
      * There's a thing with the baseline and all that... this sort-of fixes it.
      *
@@ -63,6 +67,12 @@ class BinaryOperation extends Widget {
             }
         }
         return expression;
+    }
+
+    properties(): Object {
+        return {
+            operation: this.operation
+        };
     }
 
     /** Paints the widget on the canvas. */

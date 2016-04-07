@@ -68,7 +68,7 @@ class MySketch {
 		this.symbols = [];
 		this.p.createCanvas(800, 600);
 
-		this.symbols = _.map([[100, 400, "M"], [300, 200, "x"], [500, 150, "i"], [700, 250, "j"]], (p) => {
+		this.symbols = _.map([[100, 200, "M"], [300, 200, "x"], [500, 150, "i"], [700, 250, "j"]], (p) => {
 			var s = new Symbol(this.p, this, <string>p[2]);
 			s.position = this.p.createVector(p[0], p[1]);
 			return s;
@@ -85,6 +85,11 @@ class MySketch {
 		var fraction = new Fraction(this.p, this);
 		fraction.position = this.p.createVector(400, 500);
 		this.symbols.push(fraction);
+
+		fraction.dockingPoints["numerator"].child = this.symbols[1];
+		fraction.dockingPoints["denominator"].child = this.symbols[2];
+		this.symbols[0].dockingPoints["right"].child = fraction;
+		this.symbols = _.without(this.symbols, this.symbols[1], this.symbols[2], fraction);
 
 		this.prevTouch = this.p.createVector(0,0);
 	};
@@ -177,6 +182,10 @@ class MySketch {
 		}
 		_.each(this.symbols, symbol => {
 			console.log(symbol.id + " -> " + symbol.getExpression("python"));
+		});
+
+		_.each(this.symbols, symbol => {
+			console.log(JSON.stringify(symbol.subtreeObject()));
 		});
 
 		this.movingSymbol = null;

@@ -73,6 +73,10 @@ abstract class Widget {
 	/** Convenience pointer to this widget's parent */
 	parentWidget: Widget = null;
 
+	get typeAsString(): string {
+		return "Widget";
+	}
+
 	constructor(p: any, protected s: any) {
 		// Take a new unique id for this symbol
 		this.id = ++wId;
@@ -154,6 +158,41 @@ abstract class Widget {
 	abstract boundingBox(): Rect;
 
 	// ************ //
+
+	subtreeObject(): Object {
+		var dockingPoints = {};
+		_.each(this.dockingPoints, (dockingPoint, key) => {
+			if(dockingPoint.child != null) {
+				dockingPoints[key] = dockingPoint.child.subtreeObject();
+			}
+		});
+		var p = this.getAbsolutePosition();
+		var o = {
+			id: this.id,
+			type: this.typeAsString
+		};
+		if(!this.parentWidget) {
+			o["position"] = { x: p.x, y: p.y };
+			o["expression"] = {
+				latex: this.getExpression("latex"),
+				python: this.getExpression("python")
+			};
+		};
+		if(!_.isEmpty(dockingPoints)) {
+			o["children"] = dockingPoints;
+		}
+		var properties = this._properties();
+		if(properties) {
+			o["properties"] = properties;
+		}
+		return o;
+	}
+
+	abstract properties();
+
+	_properties(): Object {
+		return this.properties();
+	}
 
 	/**
 	 * The bounding box including this widget's whole subtree.

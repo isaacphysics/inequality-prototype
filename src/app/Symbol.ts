@@ -8,6 +8,10 @@ class Symbol extends Widget {
     protected s: any;
     private letter: string;
 
+	get typeAsString(): string {
+		return "Symbol";
+	}
+
 	/**
 	 * There's a thing with the baseline and all that... this sort-of fixes it.
 	 *
@@ -100,6 +104,12 @@ class Symbol extends Widget {
 			}
 		}
 		return expression;
+	}
+
+	properties(): Object {
+		return {
+			letter: this.letter
+		};
 	}
 
 	/** Paints the widget on the canvas. */
