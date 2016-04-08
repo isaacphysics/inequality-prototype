@@ -2,6 +2,11 @@ import { Widget, Rect } from './Widget.ts';
 import { Symbol } from './Symbol.ts';
 import { DockingPoint } from "./DockingPoint.ts";
 
+/**
+ * Binary operations, such as plus and minus.
+ *
+ * BE EXTRA CAREFUL with the minus sign: use "−" (U+2212), not just a dash.
+ */
 export
 class BinaryOperation extends Widget {
     protected s: any;
