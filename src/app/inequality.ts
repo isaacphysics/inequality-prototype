@@ -68,30 +68,13 @@ class MySketch {
 		this.symbols = [];
 		this.p.createCanvas(800, 600);
 
-		this.symbols = _.map([[100, 200, "M"], [300, 200, "x"], [500, 150, "i"], [700, 250, "j"]], (p) => {
-			var s = new Symbol(this.p, this, <string>p[2]);
-			s.position = this.p.createVector(p[0], p[1]);
-			return s;
-		});
-		var plus = new BinaryOperation(this.p, this, "+");
-		plus.position = this.p.createVector(200, 500);
-		this.symbols.push(plus);
-
-		// CAREFUL This is a Unicode MINUS sign "−" (U+2212)
-		var minus = new BinaryOperation(this.p, this, "−");
-		minus.position = this.p.createVector(600, 500);
-		this.symbols.push(minus);
-
-		var fraction = new Fraction(this.p, this);
-		fraction.position = this.p.createVector(400, 500);
-		this.symbols.push(fraction);
-
-		fraction.dockingPoints["numerator"].child = this.symbols[1];
-		fraction.dockingPoints["denominator"].child = this.symbols[2];
-		this.symbols[0].dockingPoints["right"].child = fraction;
-		this.symbols = _.without(this.symbols, this.symbols[1], this.symbols[2], fraction);
-
 		this.prevTouch = this.p.createVector(0,0);
+
+		// FIXME This is for testing purposes only.
+		var subtreeObjects = JSON.parse('[{"type":"Symbol","position":{"x":185,"y":308},"expression":{"latex":"M−\\\\frac{x+j}{i} ","python":"M−((x+j)/(i))"},"children":{"right":{"type":"BinaryOperation","children":{"right":{"type":"Fraction","children":{"numerator":{"type":"Symbol","children":{"right":{"type":"BinaryOperation","children":{"right":{"type":"Symbol","properties":{"letter":"j"}}},"properties":{"operation":"+"}}},"properties":{"letter":"x"}},"denominator":{"type":"Symbol","properties":{"letter":"i"}}}}},"properties":{"operation":"−"}}},"properties":{"letter":"M"}}]');
+		_.each(subtreeObjects, subtreeObject => {
+			this.parseSubtreeObject(subtreeObject);
+		});
 	};
 
 	draw = () => {
@@ -100,6 +83,36 @@ class MySketch {
 			symbol.draw();
 		});
 	};
+
+	parseSubtreeObject = (root: Object) => {
+		var w: Widget = this._parseSubtreeObject(root);
+		w.position.x = root["position"]["x"];
+		w.position.y = root["position"]["y"];
+		this.symbols.push(w);
+	};
+
+	_parseSubtreeObject = (node: Object): Widget => {
+		var w: Widget = null;
+		switch(node["type"]) {
+			case "Symbol":
+				w = new Symbol(this.p, this, node["properties"]["letter"]);
+				break;
+			case "BinaryOperation":
+				w = new BinaryOperation(this.p, this, node["properties"]["operation"]);
+				break;
+			case "Fraction":
+				w = new Fraction(this.p, this);
+				break;
+			default: // this would be a Widget...
+				break;
+		}
+		if(node["children"]) {
+			_.each(node["children"], (node, key) => {
+				w.dockingPoints[key].child = this._parseSubtreeObject(node);
+			});
+		}
+		return w;
+	}
 
 	// Executive (and possibly temporary) decision: we are moving one symbol at a time (meaning: no multi-touch)
 	// Native ptouchX and ptouchY are not accurate because they are based on the "previous frame".
@@ -181,12 +194,15 @@ class MySketch {
 			}
 		}
 		_.each(this.symbols, symbol => {
-			console.log(symbol.id + " -> " + symbol.getExpression("python"));
+			// console.log(symbol.id + " -> " + symbol.getExpression("latex"));
 		});
 
+		var subtreeObjects = [];
 		_.each(this.symbols, symbol => {
-			console.log(JSON.stringify(symbol.subtreeObject()));
+			subtreeObjects.push(symbol.subtreeObject());
 		});
+		console.log(subtreeObjects);
+		console.log(JSON.stringify(subtreeObjects));
 
 		this.movingSymbol = null;
 		this.activeDockingPoint = null;
