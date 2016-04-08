@@ -168,7 +168,6 @@ abstract class Widget {
 		});
 		var p = this.getAbsolutePosition();
 		var o = {
-			id: this.id,
 			type: this.typeAsString
 		};
 		if(!this.parentWidget) {
