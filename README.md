@@ -1,7 +1,10 @@
 # Inequality
 Isaac Equation Editor, Mark II
 
-### Install dependencies
+**WARNING** Development will continue inside [isaac-app][1]. There will be
+occasional backports to this repository.
+
+## Install
 Dependencies are managed by `npm`. Once you cloned the repository, simply do
 
     cd /path/to/inequality
@@ -65,3 +68,7 @@ more sophisticated. For example
 
 **[Addendum to 09.02.2016]** Nope, not going to deal with siblings and binary
 operation docking points.
+
+---
+
+[1]: https://github.com/ucam-cl-dtg/isaac-app
